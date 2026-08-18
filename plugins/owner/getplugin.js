@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import config from "../../config.js";
 import { AIRich } from "../../src/lib/ourin-builder.js";
+
 const pluginConfig = {
   name: "getplugin",
   alias: ["gp", "getcode", "plugincode", "sourcecode"],
@@ -96,20 +97,23 @@ function getSimilarPlugins(name, pluginsDir) {
 
 async function handler(m, { sock }) {
   if (!config.isOwner(m.sender)) {
-    return m.reply("❌ *Owner Only!*");
+    return m.reply("🥀 *Ara ara~ Akses Ditolak!*\n\n> Maaf, hanya Master-ku yang boleh melihat rahasia ini.");
   }
 
   const pluginName = m.args?.[0]?.trim();
 
   if (!pluginName) {
     return m.reply(
-      `Halo *${m.pushName}*, sepertinya kamu lupa memasukkan nama plugin yang ingin dicari.\n\n` +
-      `Silakan gunakan format berikut:\n` +
-      `- .getplugin <nama plugin>\n\n` +
-      `Contoh penggunaan:\n` +
-      `- .getplugin menu\n` +
-      `- .getplugin sticker\n` +
-      `- .getplugin game/tebakgambar`
+      `🕰️ *ɢᴇᴛ ᴘʟᴜɢɪɴ*\n\n` +
+      `> _"Ara ara~ Master ingin melihat isi dari sebuah waktu?"_\n` +
+      `> Kurumi akan mengambilkan source code plugin untukmu.\n\n` +
+      `╭┈┈⬡「 📜 *ғᴏʀᴍᴀᴛ* 」\n` +
+      `┃ .getplugin <nama>\n` +
+      `╰┈┈┈┈┈┈┈┈⬡\n\n` +
+      `*Contoh:*\n` +
+      `> .getplugin menu\n` +
+      `> .getplugin sticker\n` +
+      `> .getplugin game/tebakgambar`,
     );
   }
 
@@ -137,12 +141,13 @@ async function handler(m, { sock }) {
 
   if (!pluginInfo) {
     const similar = getSimilarPlugins(pluginName, pluginsDir);
-    let text = `Maaf ya *${m.pushName}*, plugin dengan nama *${pluginName}* tidak dapat ditemukan.\n\n`;
+    let text = `🥀 *ᴘʟᴜɢɪɴ ᴛɪᴅᴀᴋ ᴅɪᴛᴇᴍᴜᴋᴀɴ*\n\n`;
+    text += `> Ara... Plugin \`${pluginName}\` tidak ada dalam garis waktu Kurumi.\n\n`;
 
     if (similar.length > 0) {
-      text += `Mungkin maksud kamu salah satu dari plugin ini:\n`;
+      text += `*Mungkin maksud Master adalah:*\n`;
       similar.forEach((s) => {
-        text += `- ${s}\n`;
+        text += `> - \`${s}\`\n`;
       });
     }
 
@@ -151,19 +156,32 @@ async function handler(m, { sock }) {
 
   const code = fs.readFileSync(pluginInfo.path);
 
-  return await sock.sendMessage(m.chat, {
-    text: "Langsung aja, pencet tombol dibawah",
-    footer: config.bot.name,
-    interactiveButtons: [
-      {
-        name: "cta_copy",
-        buttonParamsJson: JSON.stringify({
-          display_text: "Salin Kode",
-          copy_code: code.toString("utf-8")
-        })
-      }
-    ]
-  }, { quoted: m });
+  if (code.length > 10000) {
+    return await sock.sendMessage(m.chat, {
+      document: code.toString("utf-8"),
+      fileName: pluginInfo.file,
+      fileLength: 999999999,
+      caption: `🕰️ Ara ara, Master ${m.pushName}~ Berikut ini adalah gulungan kode dari plugin yang Master minta.\n\nMaster bisa menyimpan dokumen di atas, atau menyalin kodenya lewat tombol di bawah. 🖤\n\n❓ *Kenapa lewat Dokumen?*\nBaris kodenya terlalu panjang, Kurumi khawatir ini akan mengganggu stabilitas sistem jika dipaksa menggunakan teks biasa~`,
+      footer: "🍷 Silakan salin kodenya di bawah ini",
+      interactiveButtons: [
+        {
+          name: 'cta_copy',
+          buttonParamsJson: JSON.stringify({
+            display_text: '📜 Copy Code nya',
+            copy_code: code
+          })
+        }
+      ]
+    }, { quoted: m });
+  }
+
+  await new AIRich(sock)
+    .addText(
+      `🕰️ Ara ara, Master ${m.pushName}~ Berikut ini adalah kode rahasia dari plugin yang Master minta 🖤\n\n- 📜 Nama Plugin : ${pluginInfo.file}\n- 🕸️ Kategori : ${pluginInfo.category}\n\n`,
+    )
+    .addCode("javascript", code.toString("utf-8"))
+    .addText("\n\n_Catatan: Jangan lupa disalin kodenya, Master~ 🥀_")
+    .send(m.chat);
 }
 
 export { pluginConfig as config, handler };

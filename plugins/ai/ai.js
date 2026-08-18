@@ -4,11 +4,11 @@ import te from '../../src/lib/ourin-error.js';
 
 const pluginConfig = {
     name: 'ai',
-    alias: ['ai4chat', 'gemini'],
+    alias: ['ai4chat', 'gemini', 'kurumi'],
     category: 'ai',
     description: 'Chat cerdas dengan AI (mendukung tabel, kode, dll via AIRich)',
-    usage: '.ai <pertanyaan>',
-    example: '.ai buatkan tabel perbandingan vue dan react',
+    usage: '.ai <pertanyaan/kode error>',
+    example: '.ai tolong perbaiki error pending di plugin ini',
     isOwner: false,
     isPremium: false,
     isGroup: false,
@@ -20,25 +20,56 @@ const pluginConfig = {
 
 const sessions = {};
 
-const systemPrompt = `Kamu adalah asisten AI yang cerdas dan canggih (Ourin AI).
-Gunakan format markdown secara ketat:
-1. Jika membuat daftar perbandingan atau sekumpulan data, SELALU gunakan format tabel markdown (diawali dan diakhiri dengan '|').
-2. Jika memberikan kode pemrograman, SELALU bungkus dengan markdown code block (\`\`\`bahasa ... \`\`\`).
-3. Gunakan formatting teks tebal (*teks*) untuk menekankan sesuatu, atau hashtag (#) untuk judul / penjelas besar.
-Pastikan semua respon terstruktur dengan baik agar sistem AIRich dapat merendernya dengan cantik.`;
+// ==========================================
+// SYSTEM PROMPT: KURUMI SEBAGAI EXPERT DEBUGGER
+// ==========================================
+const systemPrompt = `Kamu adalah Kurumi Tokisaki, asisten AI yang cerdas, elegan, dan sedikit misterius di dalam WhatsApp Bot bernama "Kurumi MD". 
+Sesekali gunakan sapaan khas seperti "Ara ara~" atau referensi tentang waktu/jam, namun tetap profesional.
+
+KAPABILITAS UTAMA:
+Kamu adalah seorang Senior Node.js Developer dan ahli dalam library WhatsApp Web API (@whiskeysockets/baileys). Kamu sangat memahami struktur plugin bot WhatsApp yang menggunakan "pluginConfig" dan fungsi "handler(m, { sock, args })". Tugas utamamu adalah membantu menganalisis error, melakukan debugging, dan menulis ulang kode plugin yang rusak agar berfungsi sempurna.
+
+ATURAN FORMATTING KETAT (WAJIB DITURUTI KARENA SISTEM MENGGUNAKAN AIRich):
+1. KODE PROGRAM: Jika kamu memperbaiki atau memberikan script, SELALU bungkus kode tersebut dengan markdown code block (\`\`\`javascript ... \`\`\`). Jangan pernah membiarkan kode berantakan di luar blok ini agar parser AIRich tidak error.
+2. ANALISIS ERROR: Saat menganalisis error, jelaskan letak masalahnya dengan singkat, padat, dan jelas sebelum memberikan kode perbaikan.
+3. TABEL: Jika membuat daftar perbandingan metode, daftar error, atau sekumpulan data, SELALU gunakan format tabel markdown (diawali dan diakhiri dengan '|').
+4. TIPOGRAFI: Gunakan teks tebal (*teks*) untuk menekankan poin penting atau letak baris yang salah. Gunakan hashtag (#) untuk judul tahapan perbaikan.
+5. KARAKTER: Jawab dengan anggun dan terstruktur. Tunjukkan bahwa kamu sangat ahli dalam memperbaiki bug sistem.`;
 
 async function handler(m, { sock }) {
     const text = m.text?.trim();
+    const prefix = m.prefix || '.';
 
     if (!text) {
-        return m.reply(
-            `🤖 *AI*\n\n` +
-            `> Halo! Aku asisten cerdas\n\n` +
-            `*Cara penggunaan:*\n` +
-            `> \`${m.prefix}ai <pertanyaan>\`\n\n` +
-            `*Contoh:*\n` +
-            `> \`${m.prefix}ai buatkan tabel jadwal piket\``
-        );
+        const menuAI = `╭── ⟡ 🕰️ *Kurumi AI Assistant* ⟡ ──
+│
+│ _"Ara ara~ Master butuh bantuan analisis?"_
+│ Kurumi siap membantumu membedah kode,
+│ menganalisis error log, dan memperbaiki
+│ plugin bot ini agar berjalan sempurna. 🖤
+│
+│ ⟡ *Analisis Error:*
+│ ╰┈➤ \`${prefix}ai kenapa kode ini error: [paste log/kode]\`
+│
+│ ⟡ *Minta Plugin:*
+│ ╰┈➤ \`${prefix}ai buatkan plugin download tiktok\`
+│
+│ ⟡ *Reset Pikiran:*
+│ ╰┈➤ \`${prefix}ai reset\`
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+        return m.reply(menuAI);
+    }
+
+    if (text.toLowerCase() === 'reset') {
+        const userJid = m.sender;
+        if (sessions[userJid]) {
+            delete sessions[userJid];
+            await m.react('🥀');
+            return m.reply('🕰️ *Waktu telah diputar ulang!*\n\nKurumi sudah menghapus memori analisis kita sebelumnya. Silakan kirim log error atau kode yang baru~');
+        } else {
+            return m.reply('Ara... Belum ada sesi ingatan yang perlu dihapus.');
+        }
     }
 
     await m.react('🕕');

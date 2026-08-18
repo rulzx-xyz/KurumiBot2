@@ -1,1 +1,978 @@
-[]
+{
+  "120363427806823580@g.us": {
+    "chatStats": {
+      "628978518142@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786431617928,
+        "name": "Kurumi <Bot WhatsApp>"
+      },
+      "62895321048195@s.whatsapp.net": {
+        "count": 129,
+        "lastChat": 1786630827334,
+        "name": "はい"
+      },
+      "6289670394574@s.whatsapp.net": {
+        "count": 27,
+        "lastChat": 1786502947625,
+        "name": "memorialize"
+      },
+      "6285966433780@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786502948809,
+        "name": "Lust"
+      },
+      "6283199081645@s.whatsapp.net": {
+        "count": 6,
+        "lastChat": 1786624283595,
+        "name": "A"
+      },
+      "62895393661190@s.whatsapp.net": {
+        "count": 15,
+        "lastChat": 1786724031461,
+        "name": "f"
+      }
+    },
+    "jid": "120363427806823580@g.us",
+    "name": "bot test",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "nsfw": true
+  },
+  "120363426539871476@g.us": {
+    "chatStats": {
+      "6285791315730@s.whatsapp.net": {
+        "count": 60,
+        "lastChat": 1786763537278,
+        "name": "Hamz || S.Gpt"
+      },
+      "6285282922634@s.whatsapp.net": {
+        "count": 51,
+        "lastChat": 1786764356989,
+        "name": "Print (\"Ryuu\") Run Ryuu"
+      },
+      "6282199509537@s.whatsapp.net": {
+        "count": 8,
+        "lastChat": 1786333094613,
+        "name": "fauzi"
+      },
+      "6285168601283@s.whatsapp.net": {
+        "count": 31,
+        "lastChat": 1786674545649,
+        "name": "kangwifi inc"
+      },
+      "6282172175234@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786412277020,
+        "name": "LemonSync"
+      },
+      "6285183131924@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786761605350,
+        "name": "Indomie"
+      },
+      "6285166022062@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786757223117,
+        "name": "febry.is-a.dev? bukan"
+      },
+      "6285187865930@s.whatsapp.net": {
+        "count": 11,
+        "lastChat": 1786630874679,
+        "name": "Ikyy"
+      },
+      "6285178137007@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786533396237,
+        "name": "liw pblow"
+      },
+      "62895321048195@s.whatsapp.net": {
+        "count": 26,
+        "lastChat": 1786726506640,
+        "name": "はい"
+      },
+      "6289673648826@s.whatsapp.net": {
+        "count": 53,
+        "lastChat": 1786692261459,
+        "name": "Hazel | Founder Of ZelApi"
+      },
+      "6283162065090@s.whatsapp.net": {
+        "count": 10,
+        "lastChat": 1786763906907,
+        "name": "Andika Putra"
+      },
+      "6283116973362@s.whatsapp.net": {
+        "count": 8,
+        "lastChat": 1786536075176,
+        "name": "SeptiaOfc"
+      },
+      "6283159285724@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786351252331,
+        "name": "ddda"
+      },
+      "6283127853481@s.whatsapp.net": {
+        "count": 14,
+        "lastChat": 1786713714783,
+        "name": "It's me Rizky"
+      },
+      "6282172622047@s.whatsapp.net": {
+        "count": 13,
+        "lastChat": 1786682969981,
+        "name": "Mila AIT ( Bot WhatsApp )"
+      },
+      "628978518142@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786359682974,
+        "name": "Kurumi <Bot WhatsApp>"
+      },
+      "6289665058927@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786365006137,
+        "name": "𝐅𝐚𝐧𝐳𝐳𝐌𝐨𝐝𝐳𝐳"
+      },
+      "6285600462532@s.whatsapp.net": {
+        "count": 6,
+        "lastChat": 1786761617317,
+        "name": "Rex"
+      },
+      "6281549426361@s.whatsapp.net": {
+        "count": 70,
+        "lastChat": 1786731530128,
+        "name": "𝐳𝐲𝐫𝐚𝐚"
+      },
+      "6285282813565@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786623832500,
+        "name": "h"
+      },
+      "819059629036@s.whatsapp.net": {
+        "count": 69,
+        "lastChat": 1786763572330,
+        "name": "ErerexID Chx"
+      },
+      "6283852808614@s.whatsapp.net": {
+        "count": 12,
+        "lastChat": 1786715058401,
+        "name": "FallZx Infinity CoderId"
+      },
+      "62895392968503@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786371081601,
+        "name": "Khaerul"
+      },
+      "6282352052566@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786633408038,
+        "name": "Ray"
+      },
+      "6288246841034@s.whatsapp.net": {
+        "count": 18,
+        "lastChat": 1786758916810,
+        "name": "root@ryuu-tamvan:~#"
+      },
+      "6285828577232@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786764264057,
+        "name": "reiz_"
+      },
+      "6288212160199@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786695356642,
+        "name": "YapaFgu"
+      },
+      "6287753687031@s.whatsapp.net": {
+        "count": 71,
+        "lastChat": 1786725222104,
+        "name": "."
+      },
+      "6283151955377@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786377236076,
+        "name": "Riyzping"
+      },
+      "628818846676@s.whatsapp.net": {
+        "count": 23,
+        "lastChat": 1786716376812,
+        "name": "Reishaa :3 !!"
+      },
+      "6289518941358@s.whatsapp.net": {
+        "count": 78,
+        "lastChat": 1786705511105,
+        "name": "User"
+      },
+      "6285143001499@s.whatsapp.net": {
+        "count": 41,
+        "lastChat": 1786705639937,
+        "name": "haidarrrrrrrrrrrrrrrrrror"
+      },
+      "6282146176911@s.whatsapp.net": {
+        "count": 6,
+        "lastChat": 1786535728807,
+        "name": "yardan"
+      },
+      "6289522320399@s.whatsapp.net": {
+        "count": 6,
+        "lastChat": 1786754797006,
+        "name": "Who Is Vex?"
+      },
+      "6285817944727@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786696108765,
+        "name": "Vellzyyqt"
+      },
+      "6281319859673@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786702207611,
+        "name": "Galang Purnama"
+      },
+      "6282335453910@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786422437429,
+        "name": "‮‮‮awasariH ykasS"
+      },
+      "6281318668870@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786422445891,
+        "name": "ini zane #VibeCoder"
+      },
+      "62895342022385@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786759053610,
+        "name": "haidarr"
+      },
+      "6285707641995@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786628797442,
+        "name": "mbuh"
+      },
+      "628988293493@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786619386939,
+        "name": "Ditzzy"
+      },
+      "6281522552994@s.whatsapp.net": {
+        "count": 48,
+        "lastChat": 1786761672808,
+        "name": "Jeselynn"
+      },
+      "6289696382666@s.whatsapp.net": {
+        "count": 10,
+        "lastChat": 1786465802376,
+        "name": "wlovewme"
+      },
+      "6285956337454@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786448617602,
+        "name": "in another life."
+      },
+      "6285764735713@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786526218167,
+        "name": "༒ᴱᴸᴬᴵᴺᴬメRahmad Tenpoles"
+      },
+      "628138234049@s.whatsapp.net": {
+        "count": 6,
+        "lastChat": 1786666111260,
+        "name": "LiarenXZ"
+      },
+      "6281776348790@s.whatsapp.net": {
+        "count": 9,
+        "lastChat": 1786763710788,
+        "name": "mustika payment"
+      },
+      "6289670394574@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786503241125,
+        "name": "memorialize"
+      },
+      "6285714627306@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786625376231,
+        "name": "Sanzz"
+      },
+      "6285117072758@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786621604690,
+        "name": "dxyvxz"
+      },
+      "6285823614537@s.whatsapp.net": {
+        "count": 64,
+        "lastChat": 1786759104396,
+        "name": "Taufik S.GMN,S.CLD,S.DSK"
+      },
+      "120363426539871476@g.us": {
+        "count": 4,
+        "lastChat": 1786763420716,
+        "name": "Unknown"
+      },
+      "6285822562893@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786531291937,
+        "name": "Rull Seller Kecil"
+      },
+      "62882017454031@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786534052347,
+        "name": "Glenrizky"
+      },
+      "6285899292940@s.whatsapp.net": {
+        "count": 33,
+        "lastChat": 1786668510990,
+        "name": "iEnz"
+      },
+      "62895416602000@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786625584476,
+        "name": "www.astralune.cv"
+      },
+      "6289698988955@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786633481059,
+        "name": "Xenox Lʏʀɪᴄ"
+      },
+      "6285174378627@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786724869347,
+        "name": "Kukuh ZErvida"
+      },
+      "47666285252842@s.whatsapp.net": {
+        "count": 12,
+        "lastChat": 1786743021671,
+        "name": "✞︎𝕺𝖒𝖊𝖑𝖆✞︎"
+      },
+      "135339486277790@s.whatsapp.net": {
+        "count": 11,
+        "lastChat": 1786743039117,
+        "name": "hacker"
+      },
+      "6281527068941@s.whatsapp.net": {
+        "count": 8,
+        "lastChat": 1786763167508,
+        "name": "—𝐗𝐮"
+      },
+      "6285821703054@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786688560754,
+        "name": "orvyn oyy"
+      },
+      "6281575886399@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786713532551,
+        "name": "."
+      },
+      "628895307489@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786754844998,
+        "name": "bayuu !‮"
+      },
+      "6289526802545@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786752831476,
+        "name": "noyy"
+      },
+      "6287841489287@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786754881582,
+        "name": "/larper/tyn"
+      },
+      "62895353297000@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786763501084,
+        "name": "ryzahen."
+      },
+      "6283874803764@s.whatsapp.net": {
+        "count": 8,
+        "lastChat": 1786763573326,
+        "name": "ricis"
+      },
+      "6281239075413@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786764334896,
+        "name": "kyynhz"
+      }
+    },
+    "jid": "120363426539871476@g.us",
+    "name": "› MBG #ANTI DRAMA",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "isBanned": true
+  },
+  "120363407127242317@g.us": {
+    "chatStats": {
+      "62895321048195@s.whatsapp.net": {
+        "count": 444,
+        "lastChat": 1787067225669,
+        "name": "はい"
+      },
+      "6285823614537@s.whatsapp.net": {
+        "count": 175,
+        "lastChat": 1787067221159,
+        "name": "Taufik S.GMN,S.CLD,S.DSK"
+      },
+      "628978518142@s.whatsapp.net": {
+        "count": 57,
+        "lastChat": 1786424173294,
+        "name": "Kurumi <Bot WhatsApp>"
+      },
+      "6285745208985@s.whatsapp.net": {
+        "count": 27,
+        "lastChat": 1786425590379,
+        "name": ".."
+      },
+      "6285282922634@s.whatsapp.net": {
+        "count": 58,
+        "lastChat": 1786885694169,
+        "name": "Print (\"Ryuu\") Run Ryuu"
+      },
+      "6283182153046@s.whatsapp.net": {
+        "count": 192,
+        "lastChat": 1787063993953,
+        "name": ".."
+      }
+    },
+    "jid": "120363407127242317@g.us",
+    "name": "Bot",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "antistatus": true,
+    "antibot": false
+  },
+  "120363403838888971@g.us": {
+    "chatStats": {
+      "62895321048195@s.whatsapp.net": {
+        "count": 45,
+        "lastChat": 1786448754171,
+        "name": "はい"
+      },
+      "6287821714168@s.whatsapp.net": {
+        "count": 16,
+        "lastChat": 1786490399834,
+        "name": "jen"
+      },
+      "6285834463966@s.whatsapp.net": {
+        "count": 19,
+        "lastChat": 1786903363645,
+        "name": "yyyyyyy"
+      },
+      "6282379325149@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786437457832,
+        "name": "azka"
+      },
+      "62881011709002@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786448503356,
+        "name": "yeuuu yy"
+      },
+      "6281263539593@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786446932202,
+        "name": "no tzy"
+      },
+      "6285754961692@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1787041291773,
+        "name": "FLADO15"
+      }
+    },
+    "jid": "120363403838888971@g.us",
+    "name": "THE XAVIERUZ ALLBASE 🪽",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363151527417055@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363151527417055@g.us",
+    "name": "YT : ZansPiw Oficial GROUP CHAT💢",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "chatStats": {
+      "6285815672968@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786422108180,
+        "name": "ZansPiw"
+      },
+      "6285700158613@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786417184641,
+        "name": "alfi anjar t"
+      }
+    }
+  },
+  "120363288769564494@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363288769564494@g.us",
+    "name": "COMUNITY ZANSPIW⚡",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "chatStats": {
+      "6285815672968@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786422115168,
+        "name": "ZansPiw"
+      }
+    }
+  },
+  "120363286035357195@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363286035357195@g.us",
+    "name": "Unknown Group",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363409807543834@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363409807543834@g.us",
+    "name": "𝗖𝗢𝗠𝗠𝗨𝗡𝗜𝗧𝗬 | 𝗢𝗨𝗥𝗜𝗡",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "chatStats": {
+      "6283145122631@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786732468405,
+        "name": "ini hyu bung"
+      },
+      "967739844829@s.whatsapp.net": {
+        "count": 15,
+        "lastChat": 1787050071416,
+        "name": "hyuLʏʀɪᴄ"
+      },
+      "6281882892877@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786680693991,
+        "name": "Senz"
+      },
+      "6282324624080@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786698982033,
+        "name": "Vanesa"
+      },
+      "189842604474382@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786661782366,
+        "name": "77"
+      },
+      "186586952138856@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786669224866,
+        "name": "Anda"
+      },
+      "120363409807543834@g.us": {
+        "count": 1,
+        "lastChat": 1786699168120,
+        "name": "Unknown"
+      },
+      "65996551397466@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786699731698,
+        "name": "ainimuslimah10"
+      },
+      "135828894429268@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786725813422,
+        "name": "nokos"
+      }
+    }
+  },
+  "120363407277986235@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363407277986235@g.us",
+    "name": "🌱 𝗥𝗘𝗩𝗜𝗘𝗪 | 𝗢𝗨𝗥𝗜𝗡 🍃",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "chatStats": {
+      "6285191365494@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786988841290,
+        "name": "Racun Berulah Official"
+      },
+      "6283145122631@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786567815228,
+        "name": "ini hyu bung"
+      },
+      "6281882892877@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786953814484,
+        "name": "Senz"
+      },
+      "120363407277986235@g.us": {
+        "count": 1,
+        "lastChat": 1786732442407,
+        "name": "Unknown"
+      },
+      "62882005686310@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1787000668927,
+        "name": "https://ẉ.Fikzz"
+      }
+    }
+  },
+  "120363407533577898@g.us": {
+    "chatStats": {
+      "6283844815020@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786346285822,
+        "name": "saa suka matcha"
+      },
+      "6285849736454@s.whatsapp.net": {
+        "count": 12,
+        "lastChat": 1786346995313,
+        "name": "Zai 😁"
+      },
+      "6285823614537@s.whatsapp.net": {
+        "count": 40,
+        "lastChat": 1786348705677,
+        "name": "Taufik S.GMN,S.CLD,S.DSK"
+      },
+      "6282335738901@s.whatsapp.net": {
+        "count": 11,
+        "lastChat": 1786348681845,
+        "name": "no sv wa kuhh!!"
+      },
+      "6285216513477@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786346025121,
+        "name": "Safa🌷🤍💐||𝟳𝟬𝟳"
+      },
+      "6282192105308@s.whatsapp.net": {
+        "count": 11,
+        "lastChat": 1786346325111,
+        "name": "renal"
+      },
+      "6285177390411@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786346192845,
+        "name": "ꪆৎ⸼ׄrᥲᥲrᥲ.🍒‧₊⋆"
+      },
+      "120363407533577898@g.us": {
+        "count": 1,
+        "lastChat": 1786346047566,
+        "name": "Unknown"
+      },
+      "6287894358416@s.whatsapp.net": {
+        "count": 7,
+        "lastChat": 1786346332898,
+        "name": "."
+      },
+      "6285745208985@s.whatsapp.net": {
+        "count": 10,
+        "lastChat": 1786348655300,
+        "name": ".."
+      },
+      "6287814156760@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786347733236,
+        "name": "Unknown"
+      },
+      "62895393661190@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786348701129,
+        "name": "f"
+      },
+      "628978518142@s.whatsapp.net": {
+        "count": 21,
+        "lastChat": 1786348707291,
+        "name": "Kurumi <Bot WhatsApp>"
+      },
+      "6288980172119@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786347982842,
+        "name": "araa saiyank siyoon"
+      },
+      "62881012859743@s.whatsapp.net": {
+        "count": 6,
+        "lastChat": 1786348687295,
+        "name": "N."
+      },
+      "6288223815988@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786348349312,
+        "name": "pppp"
+      },
+      "6285814428140@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786348318804,
+        "name": "𝐀𝐘𝐔||⸸𝟑𝟎𝟖 𝐍𝐗𝐋|🏴"
+      },
+      "6282177456110@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786348453145,
+        "name": "ell"
+      },
+      "6283183260894@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786348596741,
+        "name": "Aisyah😜🤭"
+      }
+    },
+    "jid": "120363407533577898@g.us",
+    "name": "ᧁׁꪱׁׁׁׅׅׅꭈׁׅᥣׁׅ֪ & ֮ϐׁᨵׁׅׅᨮׁׅׅ֮꯱",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363425426128644@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363425426128644@g.us",
+    "name": "Unknown Group",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363407399235013@g.us": {
+    "chatStats": {
+      "6287766209885@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786534653145,
+        "name": "syuu"
+      },
+      "6281319859673@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786415816323,
+        "name": "Galang Purnama"
+      },
+      "6283116973362@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786423201728,
+        "name": "SeptiaOfc"
+      },
+      "6283151955377@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786463941144,
+        "name": "Riyzping"
+      },
+      "6283121365800@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1786964911726,
+        "name": "X"
+      },
+      "48699555875@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786701430329,
+        "name": "XLaw XD"
+      },
+      "6285791315730@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786701520957,
+        "name": "Hamz || S.Gpt"
+      },
+      "6282322811829@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786745100827,
+        "name": "Haidarrr"
+      },
+      "6287731746071@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786746973304,
+        "name": "Hmmm"
+      },
+      "201130950235@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786748540970,
+        "name": "𓂀ݪۨـ بـودۍ//𝟏𝟒𝟑𝟎 \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nوبسكدا"
+      },
+      "6282123001839@s.whatsapp.net": {
+        "count": 8,
+        "lastChat": 1787042179634,
+        "name": "Naytopup Official"
+      },
+      "6285194769068@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786938439704,
+        "name": "Arvansha"
+      },
+      "6285729477827@s.whatsapp.net": {
+        "count": 3,
+        "lastChat": 1787013343846,
+        "name": "www.izukastore.com"
+      }
+    },
+    "jid": "120363407399235013@g.us",
+    "name": "› MBG #VOL2.0",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363425270708065@g.us": {
+    "chatStats": {
+      "62895321048195@s.whatsapp.net": {
+        "count": 5,
+        "lastChat": 1786568413733,
+        "name": "はい"
+      }
+    },
+    "jid": "120363425270708065@g.us",
+    "name": "test bot",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363408544989663@g.us": {
+    "chatStats": {
+      "62895321048195@s.whatsapp.net": {
+        "count": 42,
+        "lastChat": 1787025918254,
+        "name": "はい"
+      },
+      "6287875512153@s.whatsapp.net": {
+        "count": 1,
+        "lastChat": 1786491833084,
+        "name": "𝗵𝘁𝘁𝗽𝘀://𝘄.𝗝𝗮𝗸𝗮𝗮.𝗰𝗼𝗺"
+      }
+    },
+    "jid": "120363408544989663@g.us",
+    "name": "rulzbot",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363406535007037@g.us": {
+    "chatStats": {
+      "62895321048195@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786524837210,
+        "name": "はい"
+      },
+      "6287826240514@s.whatsapp.net": {
+        "count": 2,
+        "lastChat": 1786524838622,
+        "name": "𝗜𝗱𝗸"
+      }
+    },
+    "jid": "120363406535007037@g.us",
+    "name": "Issue Web ConvertSW",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363412434640556@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363412434640556@g.us",
+    "name": "🌍 ONLY HYPER 🌍",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {},
+    "chatStats": {
+      "6285151167353@s.whatsapp.net": {
+        "count": 4,
+        "lastChat": 1786670477039,
+        "name": "kamu"
+      }
+    }
+  }
+}

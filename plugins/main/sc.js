@@ -20,18 +20,18 @@ const pluginConfig = {
 
 async function handler(m, { sock }) {
     return await sock.sendMessage(m.chat, {
-        image: getAssetBuffer("ourin"),
-        caption: `🌾 Halo kak *${m.pushName}*
+        image: getAssetBuffer("kurumi2"),
+        caption: `🎀 Halo kak *${m.pushName}*
         
-Untuk asli dari bot ini, kamu bisa dapatkan melalui link, nanti kamu tinggal cari kata kunci *OURIN MD*`,
-        footer: "💬 Link ini nanti akan mengarahkan kamu ke Youtube *Zanspiw*",
+Untuk asli dari bot ini, kamu bisa dapatkan melalui link, nanti kamu tinggal cari kata kunci *sc*`,
+        footer: "💬 Link ini nanti akan mengarahkan kamu ke Channel RulzxXyz*",
         interactiveButtons: [
             {
                 name: "cta_url",
                 buttonParamsJson: JSON.stringify({
-                    display_text: "🥐 Kunjungi Youtube Zanspiw",
-                    url: "https://youtube.com/@JanpiwWok",
-                    merchant_url: "https://youtube.com/@JanpiwWok"
+                    display_text: "⏰ Kunjungi Channel RulzxXyz",
+                    url: "https://whatsapp.com/channel/0029Vb6XXI13GJP7RMc2ur0S",
+                    merchant_url: "https://whatsapp.com/channel/0029Vb6XXI13GJP7RMc2ur0S"
                 })
             }
         ]

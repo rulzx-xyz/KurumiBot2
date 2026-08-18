@@ -194,6 +194,8 @@ function setupAntiCrash() {
       "ENOTFOUND",
       "ECONNREFUSED",
       "read ECONNRESET",
+      "Socket closed",
+      "Connection closed",
     ];
     const isIgnored = ignoredErrors.some(
       (msg) => error.message?.includes(msg) || error.code === msg,
@@ -202,13 +204,17 @@ function setupAntiCrash() {
 
     logErrorBox("uncaught exception", error.message);
     console.error(c.gray(error.stack));
-    logger.system("system", "Engine is still running");
+    logger.system("system", "Engine is still running (Anti-Crash Active)");
   });
 
   process.on("unhandledRejection", (reason, promise) => {
-    logErrorBox("unhandled rejection", String(reason));
+    const reasonStr = String(reason);
+    if (reasonStr.includes("Session closed") || reasonStr.includes("Stream Errored")) {
+      return;
+    }
+    logErrorBox("unhandled rejection", reasonStr);
     console.error(c.gray("Promise:"), promise);
-    logger.system("system", "Engine is still running");
+    logger.system("system", "Engine is still running (Anti-Crash Active)");
   });
 
   process.on("warning", (warning) => {

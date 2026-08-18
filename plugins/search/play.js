@@ -33,7 +33,7 @@ async function handler(m, { sock, text }) {
     if (!search.videos.length) throw new Error("Video tidak ditemukan");
     const video = search.videos[0];
 
-    const res = await axios.get(`https://api.azbry.com/api/download/ytmp3?url=${encodeURIComponent(video.url)}`, { timeout: 60000 });
+    const res = await axios.get(`https://api.zellrayy.com/download/ytplaymusic?q=${encodeURIComponent(video.url)}`, { timeout: 60000 });
     const data = res.data;
     
     if (!data.status || !data.result || !data.result.download) {

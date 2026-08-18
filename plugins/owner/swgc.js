@@ -308,7 +308,7 @@ async function handler(m, { sock, db }) {
 
     let thumbnail = null;
     try {
-      thumbnail = getAssetBuffer("ourin2");
+      thumbnail = getAssetBuffer("kurumi2");
     } catch (e) {}
 
     await sock.sendMessage(m.chat, {
@@ -324,7 +324,7 @@ async function handler(m, { sock, db }) {
           newsletterName: botConfig?.saluran?.name,
         },
       },
-      footer: "OURIN MD",
+      footer: "KURUMI MD",
       interactiveButtons: [
         {
           name: "single_select",
