@@ -1,5 +1,5 @@
 {
-  "commandsExecuted": 450,
+  "commandsExecuted": 451,
   "command_menu": 22,
   "command_setmenu": 6,
   "command_ping": 8,
@@ -99,5 +99,6 @@
   "command_rch": 2,
   "command_tohijab": 1,
   "command_toblack": 1,
-  "command_newplugin": 1
+  "command_newplugin": 1,
+  "command_upscgh": 1
 }
