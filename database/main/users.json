@@ -67,13 +67,13 @@
   },
   "62895321048195": {
     "name": "はい",
-    "lastSeen": "2026-08-18T15:38:28.680Z",
+    "lastSeen": "2026-09-05T20:03:55.715Z",
     "jid": "62895321048195",
     "number": "62895321048195",
     "energi": 99999,
     "isPremium": false,
     "isBanned": false,
-    "exp": 12471,
+    "exp": 12591,
     "level": 1,
     "koin": 1182,
     "saldo": 0,
@@ -100,8 +100,8 @@
     },
     "inventory": {},
     "access": [],
-    "lastActiveDate": "18/8/2026",
-    "activeDays": 9
+    "lastActiveDate": "6/9/2026",
+    "activeDays": 10
   },
   "6285282922634": {
     "jid": "6285282922634",
