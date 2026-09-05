@@ -47,6 +47,16 @@
   "errorLog": [
     {
       "cmd": "unknown",
+      "err": "Cannot use 'in' operator to search for 'stream' in import {\n  generateWAMessageFromContent,\n} from \"ourin\";\n\nfunction renderPingCard({ target = \"203.175.11.164:1659\", status = \"ONLINE\", latency = \"--\"",
+      "at": 1788638622535
+    },
+    {
+      "cmd": "unknown",
+      "err": "Connection Closed",
+      "at": 1788638410226
+    },
+    {
+      "cmd": "unknown",
       "err": "Cannot read properties of undefined (reading '120363407127242317@g.us')",
       "at": 1786348963584
     },
@@ -560,9 +570,21 @@
       "jid": "62882005686310@s.whatsapp.net",
       "name": "https://ẉ.Fikzz"
     },
-    "6289602928987@s.whatsapp.net": {
-      "jid": "6289602928987@s.whatsapp.net",
-      "name": "lian"
+    "6283843667555@s.whatsapp.net": {
+      "jid": "6283843667555@s.whatsapp.net",
+      "name": "Salz"
+    },
+    "6283895390144@s.whatsapp.net": {
+      "jid": "6283895390144@s.whatsapp.net",
+      "name": "ナンジル"
+    },
+    "6285763921453@s.whatsapp.net": {
+      "jid": "6285763921453@s.whatsapp.net",
+      "name": "GARALY MD BOT"
+    },
+    "2348124454998@s.whatsapp.net": {
+      "jid": "2348124454998@s.whatsapp.net",
+      "name": "️️️ꜰᴀᴡᴀᴢᴏɴᴛᴏᴘ"
     }
   },
   "notiflimit": false,
