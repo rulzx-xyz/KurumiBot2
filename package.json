@@ -49,6 +49,7 @@
     "cloudscraper": "^4.6.0",
     "cron": "^4.4.0",
     "crypto-js": "^4.2.0",
+    "dotenv": "^17.4.2",
     "fetch-cookie": "^3.2.0",
     "fflate": "^0.8.2",
     "figlet": "^1.10.0",

@@ -23,36 +23,61 @@ async function handler(m, { sock, args }) {
     if (typeof m.react === 'function') await m.react('⏳');
 
     try {
-        // Pesan commit dinamis (bisa custom atau default)
-        const commitMsg = args.length > 0 
-            ? args.join(' ') 
+        const GITHUB_USERNAME = process.env.GITHUB_USERNAME;
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+        if (!GITHUB_USERNAME || !GITHUB_TOKEN) {
+            if (typeof m.react === 'function') await m.react('❌');
+            return m.reply(
+                '❌ *Konfigurasi belum lengkap.*\n\n' +
+                'Tambahin di file `.env` (bukan di kode plugin):\n' +
+                '```\nGITHUB_USERNAME=rulzx-xyz\nGITHUB_TOKEN=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\n```\n' +
+                '_Pastikan `.env` ada di `.gitignore` biar token gak ikut ke-commit._'
+            );
+        }
+
+        // Ambil repo dari origin yang udah ke-setup, gak perlu env terpisah.
+        const { stdout: originUrlRaw } = await execAsync('git remote get-url origin');
+        const originUrl = originUrlRaw.trim();
+        const match = originUrl.match(/github\.com[/:]([^/]+\/[^/]+?)(\.git)?$/);
+        if (!match) {
+            if (typeof m.react === 'function') await m.react('❌');
+            return m.reply(`❌ Gak bisa baca repo dari remote origin: \`${originUrl}\``);
+        }
+        const repoPath = match[1].replace(/\.git$/, '');
+
+        const commitMsg = args.length > 0
+            ? args.join(' ')
             : `Auto Update by Kurumi MD 🕰️ - ${new Date().toLocaleString('id-ID')}`;
 
-        // Daftar folder dan file spesifik sesuai gambar/request Master
         const targetFiles = 'assets case data database plugins src config.js index.js package.json';
 
         await m.reply(`🕰️ _"Ara ara~ Kurumi sedang mengumpulkan berkas Master..."_\n\n> Menyiapkan pengiriman ke GitHub:\n\`${targetFiles}\``);
 
-        // 1. Eksekusi Git Add (Hanya file/folder yang ditentukan)
+        const remoteUrl = `https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${repoPath}.git`;
+        await execAsync(`git remote set-url origin ${remoteUrl}`);
+
         await execAsync(`git add ${targetFiles}`);
 
-        // 2. Eksekusi Git Commit
         try {
             await execAsync(`git commit -m "${commitMsg}"`);
         } catch (commitErr) {
-            // Kalau tidak ada file yang berubah, git commit bakal nge-throw error
-            if (commitErr.stdout && commitErr.stdout.includes('nothing to commit')) {
+            const out = commitErr.stdout || '';
+            if (out.includes('nothing to commit') || out.includes('nothing added to commit')) {
+                await execAsync(`git remote set-url origin https://github.com/${repoPath}.git`).catch(() => {});
                 if (typeof m.react === 'function') await m.react('🥀');
                 return m.reply('🥀 _"Ara ara... Tidak ada perubahan baru yang ditemukan pada file Master, tidak ada yang perlu di-upload."_');
             }
-            throw commitErr; // Lempar error lain jika bukan karena "nothing to commit"
+            throw commitErr;
         }
 
-        // 3. Eksekusi Git Push (Asumsi branch utamanya 'main')
         const { stdout, stderr } = await execAsync('git push origin main');
 
+        // Bersihin URL biar token gak nyangkut kelamaan di .git/config
+        await execAsync(`git remote set-url origin https://github.com/${repoPath}.git`).catch(() => {});
+
         if (typeof m.react === 'function') await m.react('🖤');
-        
+
         await m.reply(
             `🖤 *PENGIRIMAN KE GITHUB BERHASIL!*\n\n` +
             `*Catatan Commit:*\n> ${commitMsg}\n\n` +
@@ -62,10 +87,10 @@ async function handler(m, { sock, args }) {
     } catch (error) {
         console.error('GitHub Push Error:', error);
         if (typeof m.react === 'function') await m.react('❌');
-        
+
         await m.reply(
             `❌ *GAGAL MENGIRIM KE GITHUB*\n\n` +
-            `> _Pastikan Master sudah mengatur akses (Token) Git di VPS._\n\n` +
+            `> _Pastikan GITHUB_USERNAME, GITHUB_TOKEN, GITHUB_REPO sudah diset di .env._\n\n` +
             `*Pesan Error:*\n\`\`\`${error.message}\`\`\``
         );
     }
