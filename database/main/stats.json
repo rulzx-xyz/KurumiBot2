@@ -1,5 +1,5 @@
 {
-  "commandsExecuted": 481,
+  "commandsExecuted": 488,
   "command_menu": 22,
   "command_setmenu": 6,
   "command_ping": 8,
@@ -53,7 +53,7 @@
   "command_tochibi": 1,
   "command_topupml": 3,
   "dailyResets": 8,
-  "command_claim": 24,
+  "command_claim": 29,
   "command_antibot": 2,
   "command_jpm": 17,
   "command_autojpm": 1,
@@ -100,9 +100,10 @@
   "command_tohijab": 1,
   "command_toblack": 1,
   "command_newplugin": 1,
-  "command_upscgh": 6,
+  "command_upscgh": 7,
   "command_ping3": 3,
   "command_play2s": 2,
   "command_totalchat": 5,
-  "command_gantiplugin": 1
+  "command_gantiplugin": 1,
+  "command_tt": 1
 }
