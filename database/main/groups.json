@@ -784,7 +784,10 @@
     "game": true,
     "rpg": true,
     "warnings": [],
-    "chat": {}
+    "chat": {},
+    "isBanned": true,
+    "antiphising": "on",
+    "antijudol": "on"
   },
   "120363425426128644@g.us": {
     "welcome": false,
@@ -926,7 +929,47 @@
     "game": true,
     "rpg": true,
     "warnings": [],
-    "chat": {}
+    "chat": {},
+    "anticustom": "on",
+    "anticustomMode": "remove",
+    "anticustomRules": [
+      {
+        "name": "anti kata kotor #1",
+        "groupName": "anti kata kotor",
+        "pattern": "bokep",
+        "type": "contains",
+        "action": "remove",
+        "flags": "i",
+        "createdAt": "2026-09-12T01:56:31.836Z"
+      },
+      {
+        "name": "anti kata kotor #2",
+        "groupName": "anti kata kotor",
+        "pattern": "uncensored",
+        "type": "contains",
+        "action": "remove",
+        "flags": "i",
+        "createdAt": "2026-09-12T01:56:31.836Z"
+      },
+      {
+        "name": "anti kata kotor #3",
+        "groupName": "anti kata kotor",
+        "pattern": "kontol",
+        "type": "contains",
+        "action": "remove",
+        "flags": "i",
+        "createdAt": "2026-09-12T01:56:31.836Z"
+      },
+      {
+        "name": "anti kata kotor #4",
+        "groupName": "anti kata kotor",
+        "pattern": "pekob",
+        "type": "contains",
+        "action": "remove",
+        "flags": "i",
+        "createdAt": "2026-09-12T01:56:31.836Z"
+      }
+    ]
   },
   "120363406535007037@g.us": {
     "chatStats": {
@@ -972,7 +1015,8 @@
     "game": true,
     "rpg": true,
     "warnings": [],
-    "chat": {}
+    "chat": {},
+    "isBanned": true
   },
   "120363412434640556@g.us": {
     "welcome": false,
@@ -994,5 +1038,48 @@
         "name": "kamu"
       }
     }
+  },
+  "120363409088670162@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363409088670162@g.us",
+    "name": "claim kurumi",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363030069992317@g.us": {
+    "isBanned": true,
+    "jid": "120363030069992317@g.us",
+    "name": "Experimental-Belll - General",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363310061167655@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363310061167655@g.us",
+    "name": "𝐗-𝐓𝐞𝐫𝐦𝐚𝐢",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
   }
 }
