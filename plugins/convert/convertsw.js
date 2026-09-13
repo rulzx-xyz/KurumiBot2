@@ -2,21 +2,19 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import { fileURLToPath } from 'url'
-import { execFile } from 'child_process'
+import { execFile, spawn } from 'child_process'
 import { promisify } from 'util'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const execFileAsync = promisify(execFile)
 
-// Lock sederhana - cegah 2 proses convertsw jalan bersamaan (rebutan CPU/RAM
-// bisa bikin file kehapus/gagal baca di tengah proses, kayak yang kejadian).
 let sedangProses = false
 
 const pluginConfig = {
     name: 'convertsw',
     alias: ['convertsw'],
     category: 'convert',
-    description: 'Convert video untuk status WhatsApp (Max 60 detik, 1080p, pilih 60/90/120fps)',
+    description: 'Convert video untuk status WhatsApp (Max 60 detik, aspect ratio asli, Progress Bar)',
     usage: '.convertsw <60/90/120> (reply video / dokumen mp4)',
     example: '.convertsw 120',
     isOwner: false,
@@ -30,6 +28,17 @@ const pluginConfig = {
 
 const FPS_PILIHAN = [60, 90, 120]
 const FPS_DEFAULT = 60
+
+const KATA_BERKELAS = [
+    "Kualitas bukanlah sebuah tindakan, melainkan sebuah kebiasaan.",
+    "Karya yang hebat tidak dihasilkan oleh kekuatan, melainkan ketekunan.",
+    "Hal-hal besar tidak pernah datang dari zona nyaman.",
+    "Bukan tentang seberapa cepat, tapi seberapa konsisten.",
+    "Detail kecil membedakan yang biasa dengan yang luar biasa.",
+    "Kesabaran itu pahit, tetapi buahnya manis.",
+    "Waktu adalah modal paling berharga bagi mereka yang mengerti.",
+    "Kesempurnaan tidak bisa dicapai, namun dalam mengejarnya kita menangkap keunggulan."
+]
 
 function getMediaType(m) {
     if (!m.quoted) return null
@@ -134,7 +143,7 @@ async function getVideoDuration(filePath) {
             '-of', 'default=noprint_wrappers=1:nokey=1',
             filePath
         ])
-        const duration = Math.round(parseFloat(stdout.trim()))
+        const duration = parseFloat(stdout.trim())
         return isNaN(duration) ? 0 : duration
     } catch {
         return 0
@@ -158,35 +167,58 @@ async function getVideoDimensions(filePath) {
     }
 }
 
-// Sesuaikan target 1080p berdasarkan orientasi video asli, biar gak
-// nambahin bar hitam gede kayak video portrait dipaksa ke frame landscape.
 function targetDimensi(width, height) {
-    if (height > width) return { w: 1080, h: 1920 } // portrait
-    if (height === width) return { w: 1080, h: 1080 } // square
-    return { w: 1920, h: 1080 } // landscape
+    const maxSide = 1920
+    let targetW = width
+    let targetH = height
+
+    if (width >= height) {
+        if (width > maxSide) {
+            targetW = maxSide
+            targetH = Math.round((height * maxSide) / width)
+        } else if (width < 1280) {
+            targetW = 1280
+            targetH = Math.round((height * 1280) / width)
+        }
+    } else {
+        if (height > maxSide) {
+            targetH = maxSide
+            targetW = Math.round((width * maxSide) / height)
+        } else if (height < 1280) {
+            targetH = 1280
+            targetW = Math.round((width * 1280) / height)
+        }
+    }
+
+    targetW = targetW % 2 !== 0 ? targetW + 1 : targetW
+    targetH = targetH % 2 !== 0 ? targetH + 1 : targetH
+
+    const orientasi = targetH > targetW ? 'portrait' : targetH === targetW ? 'square' : 'landscape'
+    return { w: targetW, h: targetH, orientasi }
 }
 
-// Scale paksa ke 1920x1080 (pad hitam kalau aspect ratio beda, biar gak gepeng/distorsi)
-function tunggu(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-// Pengaman: pastikan file beneran siap dibaca (bukan cuma existsSync yang
-// bisa true tapi write belum kelar/buffer belum keflush) sebelum ffmpeg
-// dipanggil - ini yang bikin "No such file or directory" kejadian kemarin.
 async function tungguFileSiap(filePath, percobaan = 5, jedaMs = 250) {
     for (let i = 0; i < percobaan; i++) {
         try {
             const stat = fs.statSync(filePath)
             if (stat.size > 1000) return true
         } catch { }
-        await tunggu(jedaMs)
+        await new Promise(r => setTimeout(r, jedaMs))
     }
     return fs.existsSync(filePath)
 }
 
-async function reencodeVideo(inputPath, outputPath, fps, targetW, targetH) {
-    const scaleFilter = `scale=w=${targetW}:h=${targetH}:force_original_aspect_ratio=decrease,pad=${targetW}:${targetH}:(ow-iw)/2:(oh-ih)/2:color=black`
+function buatProgressBar(persen) {
+    const totalKotak = 12
+    const terisi = Math.round((persen / 100) * totalKotak)
+    const kosong = totalKotak - terisi
+    const isi = '█'.repeat(terisi)
+    const blm = '░'.repeat(kosong)
+    return `[${isi}${blm}]`
+}
+
+async function reencodeVideoWithProgress(inputPath, outputPath, fps, targetW, targetH, totalDurationSec, onProgress) {
+    const scaleFilter = `scale=w=${targetW}:h=${targetH}`
 
     const argsBersama = [
         '-c:v', 'libx264',
@@ -203,11 +235,9 @@ async function reencodeVideo(inputPath, outputPath, fps, targetW, targetH) {
         '-y', outputPath
     ]
 
-    // Percobaan 1: motion interpolation mode "blend" (jauh lebih ringan
-    // dari "mci" full motion-compensation) - tetap lebih halus dari
-    // duplikasi frame biasa, tapi gak seberat sebelumnya.
+    let sukses = false
     try {
-        await execFileAsync('ffmpeg', [
+        await jalankanFfmpegProses([
             '-i', inputPath,
             '-t', '60',
             '-threads', '0',
@@ -215,25 +245,59 @@ async function reencodeVideo(inputPath, outputPath, fps, targetW, targetH) {
             '-preset', 'veryfast',
             '-crf', '19',
             ...argsBersama
-        ], { timeout: 180000 }) // 3 menit
-        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 1000) return 'halus'
+        ], totalDurationSec, onProgress)
+        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 1000) sukses = true
     } catch (e) {
-        console.error('[convertsw] minterpolate gagal, fallback ke cara cepat:', e.message)
+        console.error('[convertsw] minterpolate gagal, mencoba fallback:', e.message)
     }
 
-    // Fallback: kalau minterpolate gagal/timeout, tetap kasih hasil HD
-    // (CRF rendah) walau geraknya duplikat frame, bukan interpolasi asli.
-    await execFileAsync('ffmpeg', [
-        '-i', inputPath,
-        '-t', '60',
-        '-threads', '0',
-        '-vf', `${scaleFilter},fps=${fps}`,
-        '-preset', 'ultrafast',
-        '-crf', '20',
-        ...argsBersama
-    ], { timeout: 90000 })
+    if (!sukses) {
+        await jalankanFfmpegProses([
+            '-i', inputPath,
+            '-t', '60',
+            '-threads', '0',
+            '-vf', `${scaleFilter},fps=${fps}`,
+            '-preset', 'ultrafast',
+            '-crf', '20',
+            ...argsBersama
+        ], totalDurationSec, onProgress)
+    }
 
-    return 'fallback'
+    return sukses ? 'halus' : 'fallback'
+}
+
+function jalankanFfmpegProses(args, totalDurationSec, onProgress) {
+    return new Promise((resolve, reject) => {
+        const ff = spawn('ffmpeg', args)
+        let stderrData = ''
+
+        ff.stderr.on('data', (chunk) => {
+            const text = chunk.toString()
+            stderrData += text
+
+            const match = text.match(/time=(\d{2}):(\d{2}):([\d.]+)/)
+            if (match && totalDurationSec > 0) {
+                const jam = parseInt(match[1])
+                const mnt = parseInt(match[2])
+                const dtk = parseFloat(match[3])
+                const detikBerjalan = (jam * 3600) + (mnt * 60) + dtk
+                
+                let persen = Math.round((detikBerjalan / Math.min(totalDurationSec, 60)) * 100)
+                if (persen > 99) persen = 99
+                onProgress(persen)
+            }
+        })
+
+        ff.on('close', (code) => {
+            if (code === 0) resolve(true)
+            else {
+                const err = new Error(`FFmpeg exited with code ${code}`)
+                err.stderr = stderrData
+                reject(err)
+            }
+        })
+        ff.on('error', (err) => reject(err))
+    })
 }
 
 async function handler(m, { sock, args }) {
@@ -242,20 +306,17 @@ async function handler(m, { sock, args }) {
     }
 
     if (sedangProses) {
-        return m.reply('⏳ Masih ada video lain yang sedang diproses. Tunggu sampai selesai dulu ya, baru coba lagi.')
+        return m.reply('⏳ Masih ada video lain yang sedang diproses. Mohon tunggu sebentar.')
     }
 
     if (!m.quoted) {
         return m.reply(
-            `*CONVERT VIDEO STATUS WA*\n\n` +
+            `*STATUS WA CONVERTER*\n\n` +
             `Reply video atau dokumen MP4 lalu ketik:\n` +
             `\`${m.prefix}convertsw <60/90/120>\`\n\n` +
-            `Contoh: \`${m.prefix}convertsw 90\`\n` +
-            `(kalau gak diisi, default ${FPS_DEFAULT}fps)\n\n` +
-            `• Output dipaksa: 1080p\n` +
-            `• Batas Durasi: Max 60 Detik\n` +
-            `• Batas File: 250 MB\n\n` +
-            `_Prioritas kualitas (motion smoothing + HD) - proses bisa makan waktu beberapa menit._`
+            `• Default FPS: ${FPS_DEFAULT}fps\n` +
+            `• Fitur: Motion Smoothing + Aspect Ratio Asli Terjaga\n` +
+            `• Durasi Max: 60 Detik`
         )
     }
 
@@ -276,9 +337,6 @@ async function handler(m, { sock, args }) {
     m.react('⏳')
     sedangProses = true
 
-    // Pakai OS temp dir (bukan folder tmp/ milik project) - biar gak
-    // kesentuh proses cleanup lain di kode utama bot yang mungkin
-    // membersihkan tmp/ secara berkala dan bikin file hilang di tengah proses.
     const tmpDir = path.join(os.tmpdir(), 'kurumibot-convertsw')
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
 
@@ -286,12 +344,18 @@ async function handler(m, { sock, args }) {
     const inPath = path.join(tmpDir, `csw_in_${ts}.mp4`)
     const outPath = path.join(tmpDir, `csw_out_${ts}.mp4`)
 
-    try {
-        await m.reply(`Sedang memproses video (HD, motion smoothing)... bisa makan waktu beberapa menit ⏳`)
+    let msgProgress = await sock.sendMessage(m.chat, {
+        text: `⏳ *[SYSTEM]* : Mempersiapkan konversi...\n` +
+              `━━━━━━━━━━━━━━━━━━━\n` +
+              `⏳ ${buatProgressBar(0)} 0%\n` +
+              `🎯 Status: Mengunduh Media...`
+    }, { quoted: m }).catch(() => null)
 
+    try {
         const successDownload = await downloadMediaToDisk(m, mediaType, inPath)
         if (!successDownload || !fs.existsSync(inPath)) {
             m.react('❌')
+            if (msgProgress?.key) await sock.sendMessage(m.chat, { delete: msgProgress.key }).catch(() => {})
             return m.reply('Gagal mengunduh file media.')
         }
 
@@ -299,24 +363,66 @@ async function handler(m, { sock, args }) {
         if (inStats.size > 250 * 1024 * 1024) {
             m.react('❌')
             if (fs.existsSync(inPath)) fs.unlinkSync(inPath)
+            if (msgProgress?.key) await sock.sendMessage(m.chat, { delete: msgProgress.key }).catch(() => {})
             return m.reply('Ukuran file terlalu besar. Batas maksimal adalah 250 MB.')
         }
 
         const inputSize = formatSize(inStats.size)
 
         if (!(await tungguFileSiap(inPath))) {
-            throw new Error('File input hilang sebelum sempat diproses (kemungkinan resource VPS penuh).')
+            throw new Error('File input hilang sebelum sempat diproses.')
         }
 
+        const totalDurationSec = await getVideoDuration(inPath)
         const { width, height } = await getVideoDimensions(inPath)
-        const { w: targetW, h: targetH } = targetDimensi(width, height)
+        const { w: targetW, h: targetH, orientasi } = targetDimensi(width, height)
 
-        const metode = await reencodeVideo(inPath, outPath, fps, targetW, targetH)
+        if (msgProgress?.key) {
+            await sock.sendMessage(m.chat, {
+                text: `⚙️ *[SYSTEM]* : Memulai Render Video\n` +
+                      `━━━━━━━━━━━━━━━━━━━\n` +
+                      `⏳ ${buatProgressBar(5)} 5%\n` +
+                      `🎯 Target: ${targetW}x${targetH} (${orientasi}) • ${fps}fps`,
+                edit: msgProgress.key
+            }).catch(() => {})
+        }
+
+        let lastUpdatedPercent = 5
+        const metode = await reencodeVideoWithProgress(inPath, outPath, fps, targetW, targetH, totalDurationSec, async (persen) => {
+            if (persen >= lastUpdatedPercent + 15 || persen === 99) {
+                lastUpdatedPercent = persen
+                if (msgProgress?.key) {
+                    await sock.sendMessage(m.chat, {
+                        text: `⚙️ *[SYSTEM]* : Memproses Konversi...\n` +
+                              `━━━━━━━━━━━━━━━━━━━\n` +
+                              `⏳ ${buatProgressBar(persen)} ${persen}%\n` +
+                              `🎯 Resolusi: ${targetW}x${targetH} (${orientasi})`,
+                        edit: msgProgress.key
+                    }).catch(() => {})
+                }
+            }
+        })
+
         if (!fs.existsSync(outPath)) throw new Error('Gagal merender video')
+
+        if (msgProgress?.key) {
+            await sock.sendMessage(m.chat, {
+                text: `✨ *[SYSTEM]* : Render Selesai!\n` +
+                      `━━━━━━━━━━━━━━━━━━━\n` +
+                      `⏳ ${buatProgressBar(100)} 100%\n` +
+                      `🎯 Mengirim video ke chat...`,
+                edit: msgProgress.key
+            }).catch(() => {})
+        }
 
         const videoDuration = await getVideoDuration(outPath)
         const outStats = fs.statSync(outPath)
         const outputSize = formatSize(outStats.size)
+        const randomQuotes = KATA_BERKELAS[Math.floor(Math.random() * KATA_BERKELAS.length)]
+
+        if (msgProgress?.key) {
+            await sock.sendMessage(m.chat, { delete: msgProgress.key }).catch(() => {})
+        }
 
         await sock.sendMessage(
             m.chat,
@@ -325,13 +431,13 @@ async function handler(m, { sock, args }) {
                 mimetype: 'video/mp4',
                 fileName: `status_${ts}.mp4`,
                 caption:
-                    `*CONVERT SUCCESS*\n\n` +
-                    `• Resolusi   : ${targetW}x${targetH} (dipaksa, ${targetW > targetH ? 'landscape' : targetW === targetH ? 'square' : 'portrait'}, HD)\n` +
-                    `• Frame Rate : ${fps}fps ${metode === 'halus' ? '(motion smoothing asli)' : '(fallback, tetap HD)'}\n` +
+                    `*STATUS CONVERTER SUCCESS*\n\n` +
+                    `• Resolusi   : ${targetW}x${targetH} (${orientasi}, HD)\n` +
+                    `• Frame Rate : ${fps}fps ${metode === 'halus' ? '(Motion Smoothing)' : '(Fallback Mode)'}\n` +
                     `• Input Size : ${inputSize}\n` +
                     `• Output Size: ${outputSize}\n` +
-                    `• Durasi     : ${videoDuration > 0 ? `${videoDuration} Detik` : '60 Detik'}\n\n` +
-                    `_Catatan: WhatsApp bisa aja kompres ulang video ini saat di-upload ke status._`,
+                    `• Durasi     : ${videoDuration > 0 ? `${Math.round(videoDuration)} Detik` : '60 Detik'}\n\n` +
+                    `_"${randomQuotes}"_`,
                 gifPlayback: false,
                 ptv: false
             },
@@ -343,14 +449,13 @@ async function handler(m, { sock, args }) {
     } catch (error) {
         console.error('[convertsw]', error.message)
         m.react('❌')
-        // error.message dari execFile cuma nunjukin command line yang gagal
-        // (bisa kepotong sebelum sempat kelihatan alasannya) - stderr asli
-        // dari ffmpeg ada di error.stderr, ambil baris-baris terakhirnya
-        // karena pesan error ffmpeg biasanya muncul di akhir output.
+        if (msgProgress?.key) {
+            await sock.sendMessage(m.chat, { delete: msgProgress.key }).catch(() => {})
+        }
         const detail = (error.stderr && error.stderr.trim())
             ? error.stderr.trim().slice(-600)
             : (error.message || 'Unknown error').slice(-600)
-        await m.reply(`Terjadi kesalahan saat memproses video:\n\`\`\`${detail}\`\`\``)
+        await m.reply(`❌ *[ERROR]* Terjadi kesalahan saat memproses video:\n\`\`\`${detail}\`\`\``)
     } finally {
         sedangProses = false
         if (fs.existsSync(inPath)) fs.unlinkSync(inPath)

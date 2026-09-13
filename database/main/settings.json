@@ -27,7 +27,7 @@
   "publicAdmin": false,
   "_lastEnergiDefault": 99999,
   "_lastEnergiPremium": 99999999,
-  "lastLimitReset": "2026-09-12T17:00:00.015Z",
+  "lastLimitReset": "2026-09-13T17:00:00.142Z",
   "onlyThisGroup": null,
   "autoJpm": {
     "enabled": false,
@@ -45,6 +45,11 @@
   "autoJoinGc": false,
   "autoSholat": false,
   "errorLog": [
+    {
+      "cmd": "unknown",
+      "err": "Cannot use 'in' operator to search for 'stream' in import fs from 'fs'\nimport path from 'path'\nimport os from 'os'\nimport { fileURLToPath } from 'url'\nimport { execFile } from 'child_process'\nimport {",
+      "at": 1789319284319
+    },
     {
       "cmd": "unknown",
       "err": "Connection Closed",
@@ -1844,6 +1849,10 @@
     "6281226613208@s.whatsapp.net": {
       "jid": "6281226613208@s.whatsapp.net",
       "name": "TenzyyyV2"
+    },
+    "6285974169194@s.whatsapp.net": {
+      "jid": "6285974169194@s.whatsapp.net",
+      "name": "alpha"
     }
   },
   "notiflimit": false,
