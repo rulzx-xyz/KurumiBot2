@@ -1197,5 +1197,47 @@
     "rpg": true,
     "warnings": [],
     "chat": {}
+  },
+  "120363314816686474@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363314816686474@g.us",
+    "name": "Unknown Group",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363431065752645@g.us": {
+    "welcome": false,
+    "goodbye": false,
+    "leave": false,
+    "jid": "120363431065752645@g.us",
+    "name": "♆ 𝐘𐐼ׂ𝗽⃕𝗽⃕𝗶𝗻𝗴֩֯ ♍︎ 𝐖𝗶𝘁𝗵ׂ ♈︎ 𝐂𝗲ׅ𝐥𝘆ׂ𝗻 ⚑ 🩰🩰 ☬",
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
+  },
+  "120363427916722991@g.us": {
+    "name": "☆MARGA║ 𝑨𝑴𝑬𝑹𝑰𝑪𝑨 𝑰𝑫𝑬𝑨☆",
+    "jid": "120363427916722991@g.us",
+    "welcome": false,
+    "leave": false,
+    "goodbye": false,
+    "antilink": false,
+    "antitoxic": false,
+    "mute": false,
+    "game": true,
+    "rpg": true,
+    "warnings": [],
+    "chat": {}
   }
 }

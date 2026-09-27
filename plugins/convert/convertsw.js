@@ -65,7 +65,6 @@ function getMediaType(m) {
             name.endsWith('.mov')
         ) return 'document'
     }
-
     return null
 }
 
@@ -150,6 +149,7 @@ async function getVideoDuration(filePath) {
     }
 }
 
+// Fungsi sederhana untuk ngecek ukuran video hasil akhir (Bukan input lagi)
 async function getVideoDimensions(filePath) {
     try {
         const { stdout } = await execFileAsync('ffprobe', [
@@ -160,41 +160,10 @@ async function getVideoDimensions(filePath) {
             filePath
         ])
         const [w, h] = stdout.trim().split('x').map(Number)
-        if (!w || !h) return { width: 1920, height: 1080 }
-        return { width: w, height: h }
+        return { width: w || 0, height: h || 0 }
     } catch {
-        return { width: 1920, height: 1080 }
+        return { width: 0, height: 0 }
     }
-}
-
-function targetDimensi(width, height) {
-    const maxSide = 1920
-    let targetW = width
-    let targetH = height
-
-    if (width >= height) {
-        if (width > maxSide) {
-            targetW = maxSide
-            targetH = Math.round((height * maxSide) / width)
-        } else if (width < 1280) {
-            targetW = 1280
-            targetH = Math.round((height * 1280) / width)
-        }
-    } else {
-        if (height > maxSide) {
-            targetH = maxSide
-            targetW = Math.round((width * maxSide) / height)
-        } else if (height < 1280) {
-            targetH = 1280
-            targetW = Math.round((width * 1280) / height)
-        }
-    }
-
-    targetW = targetW % 2 !== 0 ? targetW + 1 : targetW
-    targetH = targetH % 2 !== 0 ? targetH + 1 : targetH
-
-    const orientasi = targetH > targetW ? 'portrait' : targetH === targetW ? 'square' : 'landscape'
-    return { w: targetW, h: targetH, orientasi }
 }
 
 async function tungguFileSiap(filePath, percobaan = 5, jedaMs = 250) {
@@ -217,8 +186,10 @@ function buatProgressBar(persen) {
     return `[${isi}${blm}]`
 }
 
-async function reencodeVideoWithProgress(inputPath, outputPath, fps, targetW, targetH, totalDurationSec, onProgress) {
-    const scaleFilter = `scale=w=${targetW}:h=${targetH}`
+// JURUS BARU: Scale diserahkan 100% ke FFmpeg biar presisi
+async function reencodeVideoWithProgress(inputPath, outputPath, fps, totalDurationSec, onProgress) {
+    // Filter canggih: Maksimal 1280px, jaga rasio asli, otomatis bikin genap biar gak error
+    const scaleFilter = `scale=1280:1280:force_original_aspect_ratio=decrease,pad=ceil(iw/2)*2:ceil(ih/2)*2`
 
     const argsBersama = [
         '-c:v', 'libx264',
@@ -374,29 +345,27 @@ async function handler(m, { sock, args }) {
         }
 
         const totalDurationSec = await getVideoDuration(inPath)
-        const { width, height } = await getVideoDimensions(inPath)
-        const { w: targetW, h: targetH, orientasi } = targetDimensi(width, height)
 
         if (msgProgress?.key) {
             await sock.sendMessage(m.chat, {
                 text: `⚙️ *[SYSTEM]* : Memulai Render Video\n` +
                       `━━━━━━━━━━━━━━━━━━━\n` +
                       `⏳ ${buatProgressBar(5)} 5%\n` +
-                      `🎯 Target: ${targetW}x${targetH} (${orientasi}) • ${fps}fps`,
+                      `🎯 Target: Auto Scale (HD) • ${fps}fps`,
                 edit: msgProgress.key
             }).catch(() => {})
         }
 
         let lastUpdatedPercent = 5
-        const metode = await reencodeVideoWithProgress(inPath, outPath, fps, targetW, targetH, totalDurationSec, async (persen) => {
+        const metode = await reencodeVideoWithProgress(inPath, outPath, fps, totalDurationSec, async (persen) => {
             if (persen >= lastUpdatedPercent + 15 || persen === 99) {
                 lastUpdatedPercent = persen
                 if (msgProgress?.key) {
                     await sock.sendMessage(m.chat, {
                         text: `⚙️ *[SYSTEM]* : Memproses Konversi...\n` +
                               `━━━━━━━━━━━━━━━━━━━\n` +
-                              `⏳ ${buatProgressBar(persen)} ${persen}%\n` +
-                              `🎯 Resolusi: ${targetW}x${targetH} (${orientasi})`,
+                              `⏳ ${buatProgressBar(persen)}${persen}%\n` +
+                              `🎯 Status: Menjaga rasio asli...`,
                         edit: msgProgress.key
                     }).catch(() => {})
                 }
@@ -404,6 +373,12 @@ async function handler(m, { sock, args }) {
         })
 
         if (!fs.existsSync(outPath)) throw new Error('Gagal merender video')
+
+        // Cek dimensi hasil akhir buat ditaruh di caption
+        const finalDims = await getVideoDimensions(outPath)
+        const fw = finalDims.width
+        const fh = finalDims.height
+        const orientasi = fh > fw ? 'portrait' : fh === fw ? 'square' : 'landscape'
 
         if (msgProgress?.key) {
             await sock.sendMessage(m.chat, {
@@ -432,8 +407,8 @@ async function handler(m, { sock, args }) {
                 fileName: `status_${ts}.mp4`,
                 caption:
                     `*STATUS CONVERTER SUCCESS*\n\n` +
-                    `• Resolusi   : ${targetW}x${targetH} (${orientasi}, HD)\n` +
-                    `• Frame Rate : ${fps}fps ${metode === 'halus' ? '(Motion Smoothing)' : '(Fallback Mode)'}\n` +
+                    `• Resolusi   : ${fw}x${fh} (${orientasi})\n` +
+                    `• Frame Rate : ${fps}fps${metode === 'halus' ? '(Motion Smoothing)' : '(Fallback Mode)'}\n` +
                     `• Input Size : ${inputSize}\n` +
                     `• Output Size: ${outputSize}\n` +
                     `• Durasi     : ${videoDuration > 0 ? `${Math.round(videoDuration)} Detik` : '60 Detik'}\n\n` +
