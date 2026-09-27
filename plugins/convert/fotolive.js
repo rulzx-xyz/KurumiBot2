@@ -2,13 +2,14 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import { spawn } from 'child_process'
+import { prepareWAMessageMedia, generateWAMessageFromContent } from 'ourin'
 
 const pluginConfig = {
     name: 'fotolive',
-    alias: ['livephoto', 'ptv', 'videonote'],
+    alias: ['livephoto', 'livepic'],
     category: 'convert',
-    description: 'Ubah foto atau video jadi Live Photo (Video bulat WA mentok 3 detik)',
-    usage: '.fotolive (reply foto/video)',
+    description: 'Ubah video jadi Live Photo interaktif (Tahan gambar untuk bergerak ala iOS, Max 5 Detik)',
+    usage: '.fotolive (reply video)',
     example: '.fotolive',
     isOwner: false,
     isPremium: false,
@@ -19,110 +20,116 @@ const pluginConfig = {
     isEnabled: true
 }
 
-function getMediaType(m) {
-    if (!m.quoted) return null
-    const msg = m.quoted.message
-    if (!msg) return null
-
-    if (msg.imageMessage || m.quoted.isImage) return 'image'
-    if (
-        msg.videoMessage || 
-        msg.viewOnceMessage?.message?.videoMessage || 
-        msg.viewOnceMessageV2?.message?.videoMessage ||
-        m.quoted.isVideo
-    ) return 'video'
-    
-    return null
-}
-
 async function handler(m, { sock }) {
     if (!m.quoted) {
-        return m.reply('⚠️ _"Ara ara~ mana foto atau video yang mau Kurumi ubah jadi Live Photo?"_\n\nReply pesan gambarnya kak~')
+        return m.reply('⚠️ _"Ara ara~ mana video yang mau Kurumi ubah jadi Live Photo?"_\n\nReply pesan videonya kak~')
     }
 
-    const mediaType = getMediaType(m)
-    if (!mediaType) {
-        return m.reply('⚠️ Format tidak didukung. Harap reply foto atau video saja.')
+    const msg = m.quoted.message
+    const isVideo = msg?.videoMessage || msg?.ptvMessage || msg?.viewOnceMessage?.message?.videoMessage || m.quoted.isVideo
+    
+    if (!isVideo) {
+        return m.reply('⚠️ Balas/reply video yang valid untuk dijadikan Live Photo ya kak~')
     }
 
     m.react('⏳')
 
-    // Siapin folder temporary
     const tmpDir = path.join(os.tmpdir(), 'kurumibot-fotolive')
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
 
     const ts = Date.now()
-    const ext = mediaType === 'image' ? '.jpg' : '.mp4'
-    const inPath = path.join(tmpDir, `live_in_${ts}${ext}`)
-    const outPath = path.join(tmpDir, `live_out_${ts}.mp4`)
+    const tmpVideoIn = path.join(tmpDir, `lv_in_${ts}.mp4`)
+    const tmpVideoOut = path.join(tmpDir, `lv_out_${ts}.mp4`)
+    const tmpThumb = path.join(tmpDir, `lv_thumb_${ts}.jpg`)
 
     try {
-        // Download Media (Pakai m.quoted.download bawaan biar simpel)
-        const buffer = await m.quoted.download()
-        if (!buffer || buffer.length < 100) throw new Error('Gagal mengunduh media dari pesan.')
-        fs.writeFileSync(inPath, buffer)
+        const videoBuffer = await m.quoted.download().catch(() => null)
+        if (!videoBuffer || videoBuffer.length === 0) {
+            throw new Error('Gagal mendownload video dari WhatsApp kak~')
+        }
+        
+        fs.writeFileSync(tmpVideoIn, videoBuffer)
 
-        // Filter FFmpeg: Crop ke rasio 1:1 (kotak) dan scale ke resolusi standar ptv (512x512)
-        const cropFilter = "crop=w='min(iw,ih)':h='min(iw,ih)',scale=512:512"
-
-        // Eksekusi FFmpeg
+        // ✂️ PROSES 1: Potong video jadi 5 detik max
         await new Promise((resolve, reject) => {
-            let args = []
-
-            if (mediaType === 'image') {
-                // Mode Foto: Looping foto selama 3 detik
-                args = [
-                    '-loop', '1',
-                    '-i', inPath,
-                    '-t', '3', 
-                    '-vf', cropFilter,
-                    '-c:v', 'libx264',
-                    '-pix_fmt', 'yuv420p',
-                    '-y', outPath
-                ]
-            } else {
-                // Mode Video: Potong 3 detik awal aja, audionya ikut
-                args = [
-                    '-i', inPath,
-                    '-t', '3', 
-                    '-vf', cropFilter,
-                    '-c:v', 'libx264',
-                    '-pix_fmt', 'yuv420p',
-                    '-c:a', 'aac',
-                    '-b:a', '128k',
-                    '-y', outPath
-                ]
-            }
-
-            const ff = spawn('ffmpeg', args)
-            ff.on('close', (code) => {
-                if (code === 0) resolve()
-                else reject(new Error(`FFmpeg exited with code ${code}`))
-            })
-            ff.on('error', (err) => reject(err))
+            const ff = spawn('ffmpeg', [
+                '-i', tmpVideoIn,
+                '-t', '5', // Kunci mentok 5 detik
+                '-c:v', 'libx264',
+                '-preset', 'superfast', // Biar convert-nya ngebut
+                '-c:a', 'aac', 
+                '-y', tmpVideoOut
+            ])
+            ff.on('close', code => code === 0 ? resolve() : reject(new Error(`FFmpeg potong video gagal (Code: ${code})`)))
+            ff.on('error', err => reject(err))
         })
 
-        if (!fs.existsSync(outPath) || fs.statSync(outPath).size === 0) {
-            throw new Error('Hasil render FFmpeg kosong.')
-        }
+        // 📸 PROSES 2: Ambil frame pertama buat Thumbnail (dari video yang udah dipotong)
+        await new Promise((resolve, reject) => {
+            const ff = spawn('ffmpeg', [
+                '-i', tmpVideoOut,
+                '-vframes', '1',  
+                '-q:v', '2',      
+                '-y', tmpThumb
+            ])
+            ff.on('close', code => code === 0 ? resolve() : reject(new Error(`FFmpeg gagal ambil thumbnail (Code: ${code})`)))
+            ff.on('error', err => reject(err))
+        })
 
-        // Kirim sebagai Video Note (PTV)
-        await sock.sendMessage(m.chat, {
-            video: { url: outPath },
-            ptv: true, // 🔥 INI KUNCI UTAMA BIAR JADI VIDEO BULAT
-            mimetype: 'video/mp4'
-        }, { quoted: m })
+        const finalVideoBuffer = fs.readFileSync(tmpVideoOut)
+        const thumbBuffer = fs.readFileSync(tmpThumb)
+
+        // Siapkan media di server WhatsApp
+        const flImageMedia = await prepareWAMessageMedia(
+            { image: thumbBuffer },
+            { upload: sock.waUploadToServer }
+        )
+        const flVideoMedia = await prepareWAMessageMedia(
+            { video: finalVideoBuffer },
+            { upload: sock.waUploadToServer }
+        )
+
+        // Rakit Pesan Foto (Induk)
+        const flPhotoMsg = generateWAMessageFromContent(
+            m.chat,
+            {
+                imageMessage: {
+                    ...flImageMedia.imageMessage,
+                    contextInfo: { pairedMediaType: 5, statusSourceType: 0 }
+                }
+            },
+            { quoted: m }
+        )
+        
+        // Eksekusi kirim Foto Induk
+        await sock.relayMessage(m.chat, flPhotoMsg.message, { messageId: flPhotoMsg.key.id })
+
+        // Rakit dan kirim Pesan Video (Anak / Pasangan) tersembunyi
+        await sock.relayMessage(
+            m.chat,
+            {
+                videoMessage: {
+                    ...flVideoMedia.videoMessage,
+                    contextInfo: { pairedMediaType: 6, statusSourceType: 0 }
+                },
+                messageContextInfo: {
+                    messageAssociation: { associationType: 12, parentMessageKey: flPhotoMsg.key }
+                }
+            },
+            {}
+        )
 
         m.react('✅')
 
     } catch (error) {
         console.error('[fotolive error]', error)
         m.react('❌')
-        await m.reply('❌ Gagal memproses Live Photo. Pastikan ukuran file tidak kebesaran.')
+        m.reply(`❌ Gagal membuat foto live-nya kak~ coba lagi nanti ya 🌸\n\n\`\`\`${error.message}\`\`\``)
     } finally {
-        // Garbage Collector: Hapus file temporary biar RAM & Storage VPS lu gak numpuk
-        if (fs.existsSync(inPath)) fs.unlinkSync(inPath)
-        if (fs.existsSync(outPath)) fs.unlinkSync(outPath)
+        // Hapus sampah
+        try { if (fs.existsSync(tmpVideoIn)) fs.unlinkSync(tmpVideoIn) } catch (_) {}
+        try { if (fs.existsSync(tmpVideoOut)) fs.unlinkSync(tmpVideoOut) } catch (_) {}
+        try { if (fs.existsSync(tmpThumb)) fs.unlinkSync(tmpThumb) } catch (_) {}
     }
 }
 

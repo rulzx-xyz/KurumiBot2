@@ -791,7 +791,8 @@
     "antijudol": "on",
     "antilinkgc": "on",
     "antitagsw": "on",
-    "autodl": true
+    "autodl": true,
+    "antinsfw": true
   },
   "120363425426128644@g.us": {
     "welcome": false,
