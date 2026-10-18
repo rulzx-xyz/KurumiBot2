@@ -8,9 +8,9 @@ const pluginConfig = {
     name: 'fotolive',
     alias: ['livephoto', 'livepic'],
     category: 'convert',
-    description: 'Ubah video jadi Live Photo interaktif (Tahan gambar untuk bergerak ala iOS, Max 5 Detik)',
-    usage: '.fotolive (reply video)',
-    example: '.fotolive',
+    description: 'Ubah video jadi Live Photo interaktif (Tahan gambar untuk bergerak ala iOS, bisa atur durasi detik)',
+    usage: '.fotolive <detik> (reply video)',
+    example: '.fotolive 5',
     isOwner: false,
     isPremium: false,
     isGroup: false,
@@ -20,9 +20,9 @@ const pluginConfig = {
     isEnabled: true
 }
 
-async function handler(m, { sock }) {
+async function handler(m, { sock, args }) {
     if (!m.quoted) {
-        return m.reply('⚠️ _"Ara ara~ mana video yang mau Kurumi ubah jadi Live Photo?"_\n\nReply pesan videonya kak~')
+        return m.reply('⚠️ _"Ara ara~ mana video yang mau Kurumi ubah jadi Live Photo?"_\n\nReply pesan videonya kak~\n\n*Contoh:* `.fotolive 3` (atau langsung `.fotolive`)')
     }
 
     const msg = m.quoted.message
@@ -30,6 +30,14 @@ async function handler(m, { sock }) {
     
     if (!isVideo) {
         return m.reply('⚠️ Balas/reply video yang valid untuk dijadikan Live Photo ya kak~')
+    }
+
+    // ⏱️ Ambil argumen detik (default 5 detik, max 15 detik)
+    let duration = 5
+    if (args[0] && !isNaN(args[0])) {
+        duration = parseInt(args[0])
+        if (duration < 1) duration = 1
+        if (duration > 15) duration = 15
     }
 
     m.react('⏳')
@@ -50,13 +58,13 @@ async function handler(m, { sock }) {
         
         fs.writeFileSync(tmpVideoIn, videoBuffer)
 
-        // ✂️ PROSES 1: Potong video jadi 5 detik max
+        // ✂️ PROSES 1: Potong video sesuai durasi yang diinput user
         await new Promise((resolve, reject) => {
             const ff = spawn('ffmpeg', [
                 '-i', tmpVideoIn,
-                '-t', '5', // Kunci mentok 5 detik
+                '-t', duration.toString(),
                 '-c:v', 'libx264',
-                '-preset', 'superfast', // Biar convert-nya ngebut
+                '-preset', 'superfast',
                 '-c:a', 'aac', 
                 '-y', tmpVideoOut
             ])
@@ -64,7 +72,7 @@ async function handler(m, { sock }) {
             ff.on('error', err => reject(err))
         })
 
-        // 📸 PROSES 2: Ambil frame pertama buat Thumbnail (dari video yang udah dipotong)
+        // 📸 PROSES 2: Ambil frame pertama buat Thumbnail
         await new Promise((resolve, reject) => {
             const ff = spawn('ffmpeg', [
                 '-i', tmpVideoOut,

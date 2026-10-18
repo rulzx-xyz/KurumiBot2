@@ -1,30 +1,51 @@
 import fs from 'fs'
 import path from 'path'
+import { createCanvas } from '@napi-rs/canvas'
+import te from "../../src/lib/ourin-error.js"
 
-const DB_PATH = path.join(process.cwd(), 'database', 'totalchat.json')
+const DB_DIR = path.join(process.cwd(), 'database')
+const DB_PATH = path.join(DB_DIR, 'totalchat.json')
 
+// === Fungsi Database ===
 function loadDB() {
     try {
+        if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true })
+        if (!fs.existsSync(DB_PATH)) return {}
         return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'))
-    } catch {
+    } catch (e) {
         return {}
     }
 }
 
 function saveDB(data) {
     try {
-        fs.mkdirSync(path.dirname(DB_PATH), { recursive: true })
-        fs.writeFileSync(DB_PATH, JSON.stringify(data))
+        if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true })
+        fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2))
     } catch (e) {
         console.error('TotalChat saveDB error:', e)
     }
 }
 
-function tambahHitungan(chat, sender) {
+function tambahHitungan(chat, sender, pushName) {
     if (!chat || !sender) return
     const data = loadDB()
+
     if (!data[chat]) data[chat] = {}
-    data[chat][sender] = (data[chat][sender] || 0) + 1
+
+    if (typeof data[chat][sender] === 'number') {
+        data[chat][sender] = { count: data[chat][sender], name: nomorDari(sender) }
+    }
+
+    if (!data[chat][sender]) {
+        data[chat][sender] = { count: 0, name: pushName || nomorDari(sender) }
+    }
+
+    data[chat][sender].count += 1
+
+    if (pushName && pushName !== 'undefined') {
+        data[chat][sender].name = pushName
+    }
+
     saveDB(data)
 }
 
@@ -32,64 +53,200 @@ function nomorDari(jid) {
     return String(jid || '').split('@')[0].split(':')[0]
 }
 
-function renderLeaderboardCard({ namaGrup, ranking, totalPesan }) {
-    const baris = ranking.map((r, i) => {
-        const medali = ['🥇', '🥈', '🥉'][i] || `#${i + 1}`
-        return `
-        <div class="row">
-          <div class="rank">${medali}</div>
-          <div class="rowInfo">
-            <div class="rowName">${r.nomor}</div>
-            <div class="barTrack"><div class="barFill" style="width:${r.persen}%"></div></div>
-          </div>
-          <div class="rowCount">${r.jumlah}</div>
-        </div>`
-    }).join('')
+// Kata-kata "cinta yang sesak" ala Kurumi Tokisaki - banyak biar variasinya
+// kerasa, dipilih random tiap kartu di-generate.
+const QUOTES_KURUMI = [
+    "Waktu terus mengalir,\nnamun kenangan membusuk di dalamnya... 🥀",
+    "Bahkan jika waktu diulang,\nakankah keputusasaan ini hilang? 🕰️",
+    "Manusia itu rapuh,\nhancur hanya karena detik yang berlalu... 🩸",
+    "Mari kita berdansa,\ndi dalam panggung tragedi ini... 🔫",
+    "Tak ada yang abadi,\nbahkan nyawa yang kubanggakan ini... ⏳",
+    "Cinta adalah peluru,\nyang kutembakkan ke jantungku sendiri... 💔",
+    "Kuputar waktu berulang kali,\nhanya demi satu detik bersamamu... ⏰",
+    "Rindu ini sesak,\nseperti mawar yang mencekik tenggorokanku... 🥀",
+    "Jika mencintaimu adalah dosa,\nbiar Kurumi tanggung sampai habis waktu... ⛓️",
+    "Kesepian ini abadi,\nsementara kebersamaan kita cuma sekejap... 🕯️",
+    "Setiap detik tanpamu,\nterasa seperti hukuman seribu tahun... 🩸",
+    "Kuukir namamu di jarum jam,\nagar waktu tak pernah melupakanmu... 🕰️",
+    "Hati yang hancur ini,\nmasih saja berdetak untukmu, bodoh sekali... 💔",
+    "Ara ara~ kenapa cinta harus seperti pisau,\nmenikam sambil tersenyum manis? 🔪",
+    "Aku rela mengulang waktu berkali-kali,\nasal penderitaan ini cuma milikku sendiri... ⏳",
+    "Darah dan air mata,\nharga yang pantas untuk cinta yang mustahil... 🩸",
+    "Kenangan tentangmu,\nlebih tajam dari peluru yang kugenggam... 🔫",
+    "Malam ini pun,\nKurumi hanya ditemani bayangan rindu... 🌙",
+    "Jika cinta ini salah,\nbiarkan waktu yang menghukumku, bukan kamu... 🕰️",
+    "Mawar layu ini,\nmasih lebih hidup dari hatiku yang mati karenamu... 🥀",
+    "Kufufu~ sesaknya cinta ini,\nlebih berat dari rantai takdir yang kupikul... ⛓️",
+    "Seandainya waktu bisa dibeli,\nakan kutukar semuanya untuk satu pelukanmu... ⏳",
+    "Kesendirian ini kupilih sendiri,\nkarena mencintaimu dari jauh lebih aman... 🕯️",
+    "Setiap jarum jam berdetak,\nmembawa luka yang sama, cinta yang sama... 🕰️",
+    "Biar dunia menyebutku monster,\nasal kau tetap jadi satu-satunya kelemahanku... 🔫"
+]
 
-    return `
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-* { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; box-sizing: border-box; }
-body { margin:0; background:transparent; font-family:'Segoe UI',Roboto,Arial,sans-serif; color:#f2e9e4; display:flex; justify-content:center; padding:10px; }
-.wrap { width:100%; max-width:400px; }
-.card { background:linear-gradient(160deg,#0b0f24 0%,#10162e 100%); border:1px solid #232b52; border-radius:20px; padding:22px; }
-.header { text-align:center; margin-bottom:4px; }
-.title { font-size:18px; font-weight:800; color:#fff; }
-.subtitle { font-size:12px; color:#8b93c4; margin-top:2px; }
-.totalBox { text-align:center; margin:16px 0; padding:12px; background:#1a2247; border:1px solid #2a3466; border-radius:14px; }
-.totalLabel { font-size:10.5px; color:#8b93c4; text-transform:uppercase; letter-spacing:1px; }
-.totalValue { font-size:24px; font-weight:800; color:#fbbf24; }
-.row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
-.row:last-child { border-bottom:none; }
-.rank { width:28px; text-align:center; font-size:14px; font-weight:700; color:#a78bfa; }
-.rowInfo { flex:1; min-width:0; }
-.rowName { font-size:13px; color:#fff; font-weight:600; margin-bottom:4px; font-family:monospace; }
-.barTrack { background:rgba(255,255,255,0.08); border-radius:6px; height:6px; overflow:hidden; }
-.barFill { background:linear-gradient(90deg,#4ade80,#22c55e); height:100%; border-radius:6px; }
-.rowCount { font-size:13px; font-weight:700; color:#4ade80; min-width:36px; text-align:right; }
-.footer { text-align:center; font-size:10px; color:#4a5488; margin-top:14px; letter-spacing:0.5px; text-transform:uppercase; }
-</style>
-<div class="wrap">
-  <div class="card">
-    <div class="header">
-      <div class="title">📊 TOTAL CHAT</div>
-      <div class="subtitle">${namaGrup}</div>
-    </div>
-    <div class="totalBox">
-      <div class="totalLabel">Total Pesan Grup</div>
-      <div class="totalValue">${totalPesan}</div>
-    </div>
-    ${baris || '<div class="subtitle" style="text-align:center;padding:20px 0;">Belum ada data pesan.</div>'}
-    <div class="footer">KurumiBot • Total Chat Leaderboard</div>
-  </div>
-</div>`
+// === Fungsi Render Canvas (Tema Kurumi - Napi-RS HD Edition) ===
+async function renderCanvasKurumi(namaGrup, ranking, totalPesan) {
+    const width = 800
+    const rowHeight = 70
+    const padding = 50
+    const headerHeight = 240
+    const height = headerHeight + (ranking.length > 0 ? ranking.length * rowHeight : 100) + padding
+
+    const canvas = createCanvas(width, height)
+    const ctx = canvas.getContext('2d')
+
+    // 1. Background Merah Gelap Elegan
+    const gradient = ctx.createLinearGradient(0, 0, width, height)
+    gradient.addColorStop(0, '#150303')
+    gradient.addColorStop(0.5, '#2e0404')
+    gradient.addColorStop(1, '#3d0505')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, width, height)
+
+    // Vignette tipis biar makin dramatis
+    const vignette = ctx.createRadialGradient(width / 2, height / 2, height / 4, width / 2, height / 2, height)
+    vignette.addColorStop(0, 'rgba(0,0,0,0)')
+    vignette.addColorStop(1, 'rgba(0,0,0,0.55)')
+    ctx.fillStyle = vignette
+    ctx.fillRect(0, 0, width, height)
+
+    // 2. Header dengan Glow Effect
+    ctx.shadowColor = '#ff453a'
+    ctx.shadowBlur = 18
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 38px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(`🕰️ ⛓️ ${namaGrup} ⛓️ 🥀`, width / 2, 65)
+    ctx.shadowBlur = 0
+
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'
+    ctx.font = 'italic 15px serif'
+    ctx.fillText('— Nightmare Chat Record —', width / 2, 92)
+
+    // 3. KOTAK KIRI (Quotes Sad - Glassmorphism style, hitam transparan)
+    ctx.fillStyle = 'rgba(10, 10, 10, 0.68)'
+    ctx.beginPath()
+    ctx.roundRect(40, 115, 480, 105, 16)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(255, 69, 58, 0.35)'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+
+    ctx.fillStyle = '#ff6b6b'
+    ctx.font = 'bold 13px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('💘 BISIKAN HATI YANG SESAK 🥀', 40 + 240, 140)
+
+    const randomQuote = QUOTES_KURUMI[Math.floor(Math.random() * QUOTES_KURUMI.length)]
+    const lines = randomQuote.split('\n')
+
+    ctx.fillStyle = '#e5d5d5'
+    ctx.font = 'italic 19px serif'
+    ctx.textAlign = 'center'
+    if (lines.length > 1) {
+        ctx.fillText(lines[0], 40 + 240, 172)
+        ctx.fillText(lines[1], 40 + 240, 200)
+    } else {
+        ctx.fillText(randomQuote, 40 + 240, 185)
+    }
+
+    // 4. KOTAK KANAN (Total Chat, hitam transparan)
+    ctx.fillStyle = 'rgba(10, 10, 10, 0.68)'
+    ctx.beginPath()
+    ctx.roundRect(540, 115, 220, 105, 16)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(255, 170, 0, 0.3)'
+    ctx.stroke()
+
+    ctx.fillStyle = '#ff453a'
+    ctx.font = 'bold 15px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('⏳ TOTAL PESAN ⏳', 540 + 110, 148)
+
+    ctx.shadowColor = '#ffaa00'
+    ctx.shadowBlur = 12
+    ctx.fillStyle = '#ffaa00'
+    ctx.font = 'bold 42px sans-serif'
+    ctx.fillText(totalPesan.toString(), 540 + 110, 195)
+    ctx.shadowBlur = 0
+
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.font = '12px sans-serif'
+    ctx.fillText('🩸 jejak waktu tercatat 🩸', 540 + 110, 210)
+
+    // 5. Render Baris Ranking
+    let yPos = headerHeight + 20
+
+    if (ranking.length === 0) {
+        ctx.fillStyle = '#888888'
+        ctx.font = 'italic 24px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('🕯️ Belum ada pesan tercatat di grup ini. 🕯️', width / 2, yPos + 40)
+    } else {
+        ctx.textAlign = 'left'
+        ranking.forEach((r, i) => {
+            ctx.fillStyle = 'rgba(8, 8, 8, 0.55)'
+            ctx.beginPath()
+            ctx.roundRect(40, yPos, width - 80, 52, 12)
+            ctx.fill()
+            ctx.strokeStyle = 'rgba(255, 69, 58, 0.18)'
+            ctx.lineWidth = 1
+            ctx.stroke()
+
+            const medali = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i === 3 ? '🔪' : i === 4 ? '🥀' : `⛓️ #${i + 1}`
+            ctx.fillStyle = '#ffffff'
+            ctx.font = 'bold 24px sans-serif'
+            ctx.fillText(medali, 60, yPos + 36)
+
+            let displayName = r.nama || r.nomor
+            if (displayName.length > 15) displayName = displayName.substring(0, 15) + '...'
+
+            ctx.fillStyle = '#f3f4f6'
+            ctx.font = 'bold 20px sans-serif'
+            ctx.fillText(displayName, 120, yPos + 35)
+
+            const barX = 350
+            const barWidth = 300
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
+            ctx.beginPath()
+            ctx.roundRect(barX, yPos + 19, barWidth, 14, 7)
+            ctx.fill()
+
+            const fillWidth = Math.max((r.persen / 100) * barWidth, 10)
+            const barGradient = ctx.createLinearGradient(barX, 0, barX + fillWidth, 0)
+            barGradient.addColorStop(0, '#ffaa00')
+            barGradient.addColorStop(1, '#ff453a')
+
+            ctx.shadowColor = '#ff453a'
+            ctx.shadowBlur = 8
+            ctx.fillStyle = barGradient
+            ctx.beginPath()
+            ctx.roundRect(barX, yPos + 19, fillWidth, 14, 7)
+            ctx.fill()
+            ctx.shadowBlur = 0
+
+            ctx.fillStyle = '#ffaa00'
+            ctx.font = 'bold 20px sans-serif'
+            ctx.textAlign = 'right'
+            ctx.fillText(`${r.jumlah} 💬`, width - 60, yPos + 35)
+            ctx.textAlign = 'left'
+
+            yPos += rowHeight
+        })
+    }
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+    ctx.font = 'italic 16px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('🕰️ Zafkiel • Kurumi MD 🥀', width / 2, height - 20)
+
+    return await canvas.encode('png')
 }
 
 const pluginConfig = {
     name: 'totalchat',
     alias: ['tc', 'ranking', 'leaderboard'],
     category: 'grup',
-    description: 'Ranking member paling aktif chat di grup',
+    description: 'Ranking 5 member paling aktif chat di grup (Kurumi Sad Vibes)',
     usage: '.totalchat',
     example: '.totalchat',
     isOwner: false,
@@ -103,19 +260,28 @@ const pluginConfig = {
 
 async function handler(m, { sock }) {
     try {
+        m.react('🕕')
+
         const data = loadDB()
         const chatData = data[m.chat] || {}
 
-        const totalPesan = Object.values(chatData).reduce((a, b) => a + b, 0)
-        const urutan = Object.entries(chatData)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10)
+        let totalPesan = 0
+        const listMember = Object.entries(chatData).map(([jid, info]) => {
+            const isLegacy = typeof info === 'number'
+            const count = isLegacy ? info : (info.count || 0)
+            const nama = isLegacy ? nomorDari(jid) : (info.name || nomorDari(jid))
+            totalPesan += count
+            return { jid, count, nama }
+        })
 
-        const maxJumlah = urutan[0]?.[1] || 1
-        const ranking = urutan.map(([jid, jumlah]) => ({
-            nomor: nomorDari(jid),
-            jumlah,
-            persen: Math.round((jumlah / maxJumlah) * 100)
+        const urutan = listMember.sort((a, b) => b.count - a.count).slice(0, 5)
+        const maxJumlah = urutan[0]?.count || 1
+
+        const ranking = urutan.map(u => ({
+            nomor: nomorDari(u.jid),
+            nama: u.nama,
+            jumlah: u.count,
+            persen: Math.round((u.count / maxJumlah) * 100)
         }))
 
         let namaGrup = 'Grup Ini'
@@ -124,73 +290,28 @@ async function handler(m, { sock }) {
             namaGrup = meta?.subject || namaGrup
         } catch { }
 
-        const htmlPayload = renderLeaderboardCard({ namaGrup, ranking, totalPesan })
+        const imageBuffer = await renderCanvasKurumi(namaGrup, ranking, totalPesan)
 
-        const msgContent = {
-            messageContextInfo: {
-                deviceListMetadata: {},
-                deviceListMetadataVersion: 2,
-                botMetadata: {
-                    messageDisclaimerText: '',
-                    botResponseId: 'kurumi-music-player',
-                    verificationMetadata: {
-                        proofs: [
-                            {
-                                version: 1,
-                                useCase: 1,
-                                signature: 'TklYRUwuTWVzc2FnZUJ1aWxkZXJWNC43LVZlcmlmaWNhdGlvblNpZ25hdHVyZS5NZXRhZGF0YeN55YRyad2+ZA==',
-                                certificateChain: [
-                                    'TklYRUwuTWVzc2FnZUJ1aWxkZXJWNC43LUNlcnRpZmljYXRlQ2hhaW4uTWV0YWRhdGEOvtJr968bbpKdZreOTwkk9aPN++XPE60RfuzNLkXXc7LE8BOkJOWRpo2oNXaRJ3uCNJ43HY3A+oetnvHSfcxWqmvvTSrBOI5V1NOD6RMsZ/st1XVPUx83AGps1l5jYBOYzqMNy6un2tToJ2Bt9bXRo29tWLZTu8m7TNY/hISwVpVc5tjSet5U7btPN+dMIx2UvykB1jcbWGsdklheeuz8RXSStNXzeaGvsf1lpZ/ugLE4b2BdmlRNKrY6zLE4qFtRYQoS7axOyQX+4QUyN2m9bfm7urQmn+QRSXJwMO7X5kAJJLbkVGJFt9Pm9VXPwQVrK2aaqiXlpusj+7DfDw00OULmYMmZDTqXM0nUVLxj13z0LhMQoQhhNG8utdUn4uKOFceliTZ/xiP+A54GnX9620641bqw3ctfh9NNXPsTEK8hAUD7FDqUhVntHmoEYYEHq8X1tHHZYP49/f2iezTiE8AUaoZo42/jIWQIKohOGNUib2hEqMkW8NsR8vPihvNuqPc0zKZcl6359YFQdjiiW8kCRD/rsDOr9v1eYLFZKYloFyzFqEgj+jcG/V47elOjShJ5CCPwatXwP6HIloVwtgygFsnOFmCg6Ojoivfoz8Nw1qxFwg5OU2cq/1WbWNELKnaFg4eUWCAIJ/3ZIJsEPkgemZxGhE+hdiNn9dkQYBJs1kx2BxdIkJmQ9vJSKkrMz6lTxZM3IJ9mhmKS6zYdU1ppeAao0/ayte997DQParb/AHLN79g0iW1ad0z8ir5jAl0q3a+UZPTSa4YiSqC2PZ/gfxG5wvL2mKmeKowG0RXjmEp5iNxrni+T/HRLZOoH7y0DQ24nMCPg',
-                                    'TklYRUwuTWVzc2FnZUJ1aWxkZXJWNC43LUNlcnRpZmljYXRlQ2hhaW4uTWV0YWRhdGHsL0Ccm0ELINFZ2IaBhKaeWnVuh0o6nZLCioCn9xpSADzwIS5VCWO+1eVXT2atJOyf7FYlpB0/JA3Us+aQtekuIkHu/zBXijORZ4ClF4+sF3cSTNg6gY/+6iwLK/zs3bMg+GeJrcI65vXfs95Shxlb2Rd5GRT2/2yBmR6Zkf5QwMJuptUHWtM26WY7/xlkEKGFYDZVqOSylusiOzSALa815zC6dCiHoJNLBEKMlaZZQOk57/+OYoU5zzTaEgLhyvNFHSyAlyLQ3SGFtVHAaJZHSmmSPyJowCOB+92Gkk6SWVMsk6FbU8QJWFtlhzV/W/gZ7WzUlS/AKgN0th9/cq20ToFkW7X9c+rtYavufmuieqFhXgaMD8AGsoN9QC/HzNC9D1nydPfFYEUr9BHVy2nF5gM58Y59r2rT8p5LPARIkUp8g+5DLhyW0tdZFZ1305o4AHCayZnp5rjcU2Xi/c1Qf/djBGakmijlMs4aMzKJYD0c4Q8jdI7sNyd876K2wRD+L6KeD2QB3PtCS4P7BWAl5gh5CJ6ZBrwcaKXZqcSjEwm52MqVCgYZdapAaNYUy/QndttjLOG0wxxwuX1hIhMjPnIKZR1kwnqD5EqlHpilrnojRZvjVGN4zEKmilS8rNstt4HHs/D849W+Q6LRVWiWMs0cT2IugrX+Skxd8En7Gq52UEmuVBrSTpN+UpIu20NsVb9lsvuYh3XO441606tOEY2eKcZJdTtqrOTNqbbTk0zVn1yhbOCvmfctBNDhTwaC5QMi0P9wjU5XI9SBtkdQLizc5oqpoiHeqgb8+aJHVLcbgIJ/KLZKtRWFDfzRNM02Csx4etUUapVd2NA/L0oMs/O5T9sVj9FBJ7q99GWr3PVmxJb36mHZLXC4k1gGN9swE0LtzYsUdT5tUo9ri/hS3W/SM+F1p4Kh4QIgRcG3ciIHGN44bnDh3HDCz0fDnzKYw0bclMxZPctEyJ5gEOPF6OAkjD9dEaRGq/tEPf1k9Aub+v2dEjnfrYWAm4E5Zfhs2Xh0CT0k+SzhgKd0K/46ChJ20G5+blwpIvahvTVS68+aVIX6CwXs4tcVx6FnmVsMOOkIasfaqQLZYbNBkuLoZnQAq4j8yRekrQ=='
-                                ]
-                            }
-                        ]
-                    }
-                }
-            },
-            botForwardedMessage: {
-                message: {
-                    richResponseMessage: {
-                        messageType: 1,
-                        submessages: [{ messageType: 2, messageText: `Total Chat - ${namaGrup}` }],
-                        unifiedResponse: {
-                            data: Buffer.from(JSON.stringify({
-                                response_id: 'kurumi-music-player',
-                                sections: [{
-                                    view_model: {
-                                        primitive: {
-                                            __typename: 'GenAIaeacdsnwHtmlPrimitive',
-                                            payload: htmlPayload,
-                                            trusted_sources: ['hirara.dev']
-                                        },
-                                        __typename: 'GenAISingleLayoutViewModel'
-                                    }
-                                }]
-                            })).toString('base64')
-                        },
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedAiBotMessageInfo: { botJid: '867051314767696@bot' },
-                            forwardOrigin: 4
-                        }
-                    }
-                }
-            }
-        }
+        m.react('✅')
 
-        await sock.relayMessage(m.chat, msgContent, {})
+        await sock.sendMessage(m.chat, {
+            image: imageBuffer,
+            caption: `🥀 *LEADERBOARD CHAT* 🕰️\n\n📈 *Grup:* ${namaGrup}\n💬 *Total Pesan:* ${totalPesan}\n\n> _"Setiap pesan adalah detik yang takkan pernah kembali..."_ ⏳`
+        }, { quoted: m })
+
     } catch (error) {
-        console.error('TotalChat Plugin Error:', error)
-        await m.reply('❌ *GAGAL*\n\n> ' + error.message)
+        console.error('TotalChat Canvas Error:', error)
+        m.react('☢')
+        const errDesc = te(m.prefix, m.command, m.pushName) || "❌ Gagal memproses leaderboard.";
+        await m.reply(`${errDesc}\n\n\`\`\`${error.message || error}\`\`\``)
     }
 }
 
 async function before(m) {
     try {
-        // cuma hitung pesan dari grup (chat id WA grup selalu diakhiri @g.us)
         if (!String(m.chat || '').endsWith('@g.us')) return
-        tambahHitungan(m.chat, m.sender)
+        const pushName = m.pushName || m.name || ''
+        tambahHitungan(m.chat, m.sender, pushName)
     } catch (error) {
         console.error('TotalChat before() Error:', error)
     }

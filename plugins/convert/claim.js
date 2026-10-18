@@ -14,7 +14,7 @@ const pluginConfig = {
     isEnabled: true
 }
 
-const API_BASE_URL = process.env.CONVERTSW_API_URL || 'https://kurumi-convert-production.up.railway.app'
+const API_BASE_URL = process.env.CONVERTSW_API_URL || 'https://kurumi-convert.my.id'
 
 async function handler(m, { sock, args }) {
     const code = (args[0] || '').trim().toUpperCase()

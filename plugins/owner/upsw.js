@@ -1,10 +1,14 @@
+import fs from "fs";
+import path from "path";
+import te from "../../src/lib/ourin-error.js";
+
 const pluginConfig = {
-    name: 'upsw',
-    alias: ['uploadsw', 'statusbot'],
-    category: 'owner',
-    description: 'Upload status WA HD ke nomor bot',
-    usage: '.upsw <caption atau reply media>',
-    example: '.upsw Info mabar ges!',
+    name: "upsw",
+    alias: ["uploadsw", "statusbot", "swgcall"],
+    category: "owner",
+    description: "Upload status WA HD dan tag/kirim otomatis ke seluruh grup yang ada di bot",
+    usage: ".upsw <caption atau reply media>",
+    example: ".upsw Info mabar ges!",
     isOwner: true,
     isPremium: false,
     isGroup: false,
@@ -12,21 +16,17 @@ const pluginConfig = {
     cooldown: 5,
     energi: 2,
     isEnabled: true
-}
+};
 
 async function handler(m, { sock }) {
     try {
-        // PERBAIKAN 1: Ekstrak Teks Lebih Akurat
-        // Ambil teks murni, hilangkan kata .upsw, lalu ambil sisanya
         let rawText = m.text || m.body || "";
         let text = rawText.replace(/^\.upsw/i, '').trim();
 
         let q = m.quoted ? m.quoted : m;
 
-        // Jika user cuma reply gambar tanpa ngetik apa-apa, ambil dari caption asli gambar tsb
         if (!text && q.caption) text = q.caption;
         
-        // Hapus teks bawaan bot (supaya caption "CLAIM SUCCESS" tidak ikut ke-upload)
         if (text.includes('CLAIM SUCCESS - KURUMI CONVERTSW')) {
             text = ''; 
         }
@@ -39,7 +39,7 @@ async function handler(m, { sock }) {
             return await m.reply('❌ Balas atau kirim foto/video dengan caption `.upsw teksnya`');
         }
 
-        await m.reply('⏳ Mengunggah media ke Status WhatsApp dengan kualitas HD...');
+        await m.reply('⏳ Sedang memproses media dan mengambil daftar seluruh grup...');
 
         let mediaBuffer;
         
@@ -69,28 +69,42 @@ async function handler(m, { sock }) {
         const botNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const senderNumber = m.sender || m.key.remoteJid;
         
-        // Daftar nomor yang bisa lihat status (bot dan nomor lu)
-        const viewList = [botNumber, senderNumber];
+        // Ambil seluruh JID grup yang tersimpan di cache/database bot atau store sock
+        let groupList = [];
+        try {
+            // Mengambil semua chats yang berakhiran @g.us (grup WhatsApp)
+            const chats = sock.chats ? Object.values(sock.chats) : [];
+            groupList = chats.filter(c => c.id && c.id.endsWith('@g.us')).map(c => c.id);
+            
+            // Fallback tambahan dari global.db jika ada
+            if (global.db && global.db.data && global.db.data.chats) {
+                const dbChats = Object.keys(global.db.data.chats).filter(id => id.endsWith('@g.us'));
+                groupList = [...new Set([...groupList, ...dbChats])];
+            }
+        } catch (e) {
+            console.error('Gagal mengambil list grup:', e);
+        }
 
-        // PERBAIKAN 2: Mimetype Wajib Diisi Agar WA Tidak Kompres Ulang!
+        // Gabungkan bot, owner, dan semua grup ke dalam target view status (Supaya kesebar/tag ke semua grup)
+        const viewList = [botNumber, senderNumber, ...groupList];
+
         const statusOptions = {
             [mediaType]: mediaBuffer,
             caption: text,
             mimetype: isVideo ? 'video/mp4' : 'image/jpeg' 
         };
 
-        // Eksekusi upload ke server SW
+        // Eksekusi upload ke status@broadcast dengan jid list seluruh grup
         await sock.sendMessage('status@broadcast', statusOptions, {
             backgroundColor: '#000000',
             statusJidList: viewList
         });
 
-        // Debugging balasan untuk mastiin caption-nya beneran nyangkut
-        await m.reply(`✅ *BERHASIL*\n\nStatus HD sudah di-update!\n📝 *Caption terkirim:* ${text ? text : '_(Tanpa Caption)_'}`);
+        await m.reply(`✅ *BERHASIL UPLOAD STATUS!*\n\n📝 *Caption:* ${text ? text : '_(Tanpa Caption)_'}\n🌐 *Disebarkan ke:* ${groupList.length} Grup Aktif.`);
     } catch (error) {
-        console.error('UpSW Plugin Error:', error);
+        console.error('UpSW & Swgcall Plugin Error:', error);
         await m.reply('❌ *GAGAL*\n\n> ' + error.message);
     }
 }
 
-export { pluginConfig as config, handler }
+export { pluginConfig as config, handler };

@@ -4,6 +4,7 @@ import path from "path";
 import { queueFFmpeg } from "./../../src/lib/ourin-ffmpeg.js";
 import { f } from "../../src/lib/ourin-http.js";
 import te from "../../src/lib/ourin-error.js";
+
 const pluginConfig = {
   name: "pindl",
   alias: ["pinterestdl", "pindownload", "pintdl"],
@@ -19,9 +20,12 @@ const pluginConfig = {
   energi: 1,
   isEnabled: true,
 };
-async function handler(m, { sock }) {
-  const url = m.text?.trim();
-  if (!url) {
+
+async function handler(m, { sock, args }) {
+  // Ambil URL dari argumen pertama atau cari link di text pesan
+  const text = args.length > 0 ? args[0] : (m.text ? m.text.replace(/^[^\s]+\s*/, '').trim() : '');
+  
+  if (!text || (!text.includes("pinterest") && !text.includes("pin.it"))) {
     return m.reply(
       `📌 *ᴘɪɴᴛᴇʀᴇsᴛ ᴅᴏᴡɴʟᴏᴀᴅ*\n\n` +
         `> Download gambar/video dari Pinterest\n\n` +
@@ -30,121 +34,86 @@ async function handler(m, { sock }) {
         `> \`${m.prefix}pindl https://pinterest.com/pin/xxx\``,
     );
   }
-  if (!url.includes("pinterest") && !url.includes("pin.it")) {
-    return m.reply("❌ URL tidak valid. Gunakan link Pinterest.");
-  }
+
   m.react("🕕");
+
   try {
-    const res = await axios.get(`https://api.azbry.com/api/download/pinterest?url=${encodeURIComponent(url)}`);
-    if (!res.data || !res.data.status || !res.data.result) {
-      throw new Error("Gagal mengambil data dari API Pinterest.");
+    let mediaList = [];
+    let success = false;
+
+    // Daftar API Cadangan (Multi-API Anti Down)
+    const apis = [
+      `https://api.vhtear.com/pinterestdl?link=${encodeURIComponent(text)}`,
+      `https://apiii-xrina.vercel.app/download/pindl?url=${encodeURIComponent(text)}`,
+      `https://itzpire.com/download/pinterest?url=${encodeURIComponent(text)}`
+    ];
+
+    let data = null;
+
+    for (const endpoint of apis) {
+      try {
+        const res = await axios.get(endpoint, { timeout: 10000 });
+        const resData = res.data;
+        
+        // Handle struktur data dari berbagai API
+        if (resData && (resData.status || resData.result || resData.data)) {
+          const result = resData.result || resData.data || resData;
+          
+          // Normalisasi hasil media
+          let vid = result.videos?.[0]?.url || result.video || result.download || (result.type === 'video' ? result.url : null);
+          let img = result.images?.[result.images.length - 1]?.url || result.image || result.url;
+
+          if (vid) {
+            mediaList.push({ type: 'video', url: vid });
+            success = true;
+            break;
+          } else if (img) {
+            mediaList.push({ type: 'image', url: img });
+            success = true;
+            break;
+          }
+        }
+      } catch (err) {
+        continue; // Lanjut coba API berikutnya kalau gagal
+      }
     }
 
-    const data = res.data.result;
-    const mediaList = [];
-
-    if (data.type === 'video') {
-        const vidUrl = data.videos?.[0]?.url || data.download;
-        if (vidUrl) mediaList.push({ type: 'video', url: vidUrl });
-    }
-
-    if (data.images && data.images.length > 0) {
-        const orig = data.images.find(img => img.name === 'orig') || data.images[data.images.length - 1];
-        if (orig && orig.url) mediaList.push({ type: 'image', url: orig.url });
-    } else if (data.type === 'image' && data.download) {
-        mediaList.push({ type: 'image', url: data.download });
-    }
-
-    if (mediaList.length === 0) {
-      throw new Error("Tidak ada media ditemukan");
+    if (!success || mediaList.length === 0) {
+      throw new Error("Gagal mengambil data dari semua server API Pinterest.");
     }
 
     for (const media of mediaList) {
       if (media.type === "video") {
         let masterUrl = media.url;
-        if (masterUrl.includes('.mp4')) {
-            masterUrl = masterUrl.replace(/720p|480p|360p|240p/g, 'hls').replace('.mp4', '.m3u8');
-        }
-
         const tempDir = path.join(process.cwd(), "temp");
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
         
         const timestamp = Date.now();
         const videoTemp = path.join(tempDir, `${timestamp}_v.mp4`);
-        const audioTemp = path.join(tempDir, `${timestamp}_a.mp4`);
         const outputFile = path.join(tempDir, `${timestamp}_final.mp4`);
 
         try {
-            const resHls = await axios.get(masterUrl, {
+            // Download video langsung pakai axios buffer ke file output
+            const videoBuffer = await axios.get(masterUrl, { 
+                responseType: 'arraybuffer',
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                     'Referer': 'https://www.pinterest.com/'
                 }
             });
-            const text = resHls.data;
-            const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-
-            const baseUrl = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1);
-            let videoStreamUrl = null;
-            let audioStreamUrl = null;
-            let lastBandwidth = 0;
-
-            for (let i = 0; i < lines.length; i++) {
-              if (lines[i].startsWith("#EXT-X-STREAM-INF")) {
-                const bwMatch = lines[i].match(/BANDWIDTH=(\d+)/);
-                const bw = bwMatch ? parseInt(bwMatch[1]) : 0;
-                if (bw > lastBandwidth) {
-                  lastBandwidth = bw;
-                  const u = lines[i + 1];
-                  videoStreamUrl = u?.startsWith("http") ? u : baseUrl + u;
-                }
-              }
-              if (lines[i].startsWith("#EXT-X-MEDIA") && lines[i].includes("TYPE=AUDIO")) {
-                const mUrl = lines[i].match(/URI="([^"]+)"/);
-                if (mUrl) audioStreamUrl = mUrl[1].startsWith("http") ? mUrl[1] : baseUrl + mUrl[1];
-              }
-            }
-
-            const ffmpegHdr = `-user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -headers "Referer: https://www.pinterest.com/"`;
-
-            if (!videoStreamUrl) {
-                await queueFFmpeg(`ffmpeg -y ${ffmpegHdr} -i "${masterUrl}" -c copy "${outputFile}"`);
-            } else {
-                await queueFFmpeg(`ffmpeg -y ${ffmpegHdr} -i "${videoStreamUrl}" -c copy "${videoTemp}"`);
-                if (audioStreamUrl) {
-                    await queueFFmpeg(`ffmpeg -y ${ffmpegHdr} -i "${audioStreamUrl}" -c copy "${audioTemp}"`);
-                    await queueFFmpeg(`ffmpeg -y -i "${videoTemp}" -i "${audioTemp}" -c copy "${outputFile}"`);
-                } else {
-                    fs.renameSync(videoTemp, outputFile);
-                }
-            }
             
+            fs.writeFileSync(outputFile, Buffer.from(videoBuffer.data));
+
             await sock.sendMedia(m.chat, fs.readFileSync(outputFile), null, m, {
                 type: "video",
                 contextInfo: { forwardingScore: 99, isForwarded: true }
             });
 
         } catch (err) {
-            console.error("[PinDL HLS Error]:", err.message);
-            try {
-                // Fallback: Pinterest memblokir generic axios (403), jadi download manual pakai User-Agent
-                const fallbackBuffer = await axios.get(media.url, { 
-                    responseType: 'arraybuffer',
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                        'Referer': 'https://www.pinterest.com/'
-                    }
-                });
-                await sock.sendMedia(m.chat, Buffer.from(fallbackBuffer.data), null, m, {
-                  type: "video",
-                  contextInfo: { forwardingScore: 99, isForwarded: true },
-                });
-            } catch (fallbackErr) {
-                console.error("[PinDL Fallback Error]:", fallbackErr.message);
-            }
+            console.error("[PinDL Video Error]:", err.message);
+            throw new Error("Gagal mendownload file video Pinterest.");
         } finally {
             if (fs.existsSync(videoTemp)) fs.unlinkSync(videoTemp);
-            if (fs.existsSync(audioTemp)) fs.unlinkSync(audioTemp);
             if (fs.existsSync(outputFile)) fs.unlinkSync(outputFile);
         }
       } else if (media.type === "image") {
@@ -199,4 +168,5 @@ async function handler(m, { sock }) {
     m.reply(te(m.prefix, m.command, m.pushName));
   }
 }
+
 export { pluginConfig as config, handler };

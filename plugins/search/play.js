@@ -1,6 +1,5 @@
 import axios from "axios";
 import yts from "yt-search";
-import config from "../../config.js";
 
 const pluginConfig = {
   name: "play",
@@ -21,7 +20,7 @@ function formatViews(n) {
   return n.toString();
 }
 
-async function handler(m, { sock, text }) {
+async function handler(m, { sock }) {
   const query = m.text?.trim();
   if (!query)
     return m.reply(`🎵 *ᴘʟᴀʏ*\n\n> Contoh:\n\`${m.prefix}play komang\``);
@@ -33,11 +32,16 @@ async function handler(m, { sock, text }) {
     if (!search.videos.length) throw new Error("Video tidak ditemukan");
     const video = search.videos[0];
 
-    const res = await axios.get(`https://api.zellrayy.com/download/ytplaymusic?q=${encodeURIComponent(video.url)}`, { timeout: 60000 });
+    const res = await axios.get(`https://apiii-xrina.vercel.app/download/play?q=${encodeURIComponent(video.url)}`, { timeout: 60000 });
     const data = res.data;
-    
-    if (!data.status || !data.result || !data.result.download) {
-       throw new Error("Gagal mengambil audio dari API");
+
+    // Struktur API sebenarnya: { status, creator, data: { title, media: [...], music, ... } }
+    // BUKAN data.result.download - itu yang bikin selalu gagal sebelumnya.
+    const audioUrl = data?.data?.music || data?.data?.media?.[0];
+
+    if (!data?.status || !audioUrl) {
+      console.error("[Play] Respons API gak sesuai ekspektasi:", JSON.stringify(data));
+      throw new Error("Gagal mengambil audio dari API");
     }
 
     let info = `🎵 *NOW PLAYING*\n\n`;
@@ -70,7 +74,7 @@ async function handler(m, { sock, text }) {
       },
     );
 
-    const audioRes = await axios.get(data.result.download, { responseType: "arraybuffer", timeout: 60000 });
+    const audioRes = await axios.get(audioUrl, { responseType: "arraybuffer", timeout: 60000 });
     const audioBuffer = Buffer.from(audioRes.data);
 
     await sock.sendMessage(

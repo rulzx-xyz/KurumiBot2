@@ -221,7 +221,6 @@ body { margin: 0; background: transparent; font-family: 'Segoe UI', Roboto, Helv
 .heartBtn { background: none; border: none; color: #cdbdb3; cursor: pointer; font-size: 20px; flex-shrink: 0; transition: color 0.2s, transform 0.2s; }
 .heartBtn.active { color: #ff6b5e; transform: scale(1.15); }
 
-/* --- PERBAIKAN TAMPILAN LIRIK TIDAK KEPOTONG & RATA TENGAH --- */
 .lyricsPreview {
   height: 120px;
   margin-bottom: 6px;
@@ -253,7 +252,6 @@ body { margin: 0; background: transparent; font-family: 'Segoe UI', Roboto, Helv
 }
 .lyricsEmpty { font-size: 12px; color: rgba(230,215,205,0.4); font-style: italic; text-align: center; padding: 35px 0; }
 
-/* Tombol pengatur sinkronisasi lirik di atas progress bar */
 .lyricSyncBar { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #cdbdb3; margin-bottom: 4px; padding: 0 2px; }
 .syncGroup { display: flex; gap: 6px; align-items: center; }
 .syncBtn { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; }
@@ -339,7 +337,7 @@ body { margin: 0; background: transparent; font-family: 'Segoe UI', Roboto, Helv
     const hasLyrics = ${hasLyrics} === 1;
     const lyrics = ${lyricsJson};
 
-    let lyricOffset = 0.0; // Offset interaktif jika lirik kurang sinkron
+    let lyricOffset = 0.0;
 
     function fmt(s){
         if(!Number.isFinite(s)) return '0:00';
@@ -370,15 +368,11 @@ body { margin: 0; background: transparent; font-family: 'Segoe UI', Roboto, Helv
     let activeLyricIndex = -1;
     function updateLyrics(t) {
         if (!hasLyrics || !lyrics.length) return;
-        
-        // Terapkan waktu audio ditambah offset manual user
         const adjustedTime = Math.max(0, t + lyricOffset);
-
         let idx = 0;
         for (let i = 0; i < lyrics.length; i++) {
             if (adjustedTime >= lyrics[i].time) idx = i; else break;
         }
-
         if (idx !== activeLyricIndex) {
             const lines = lyricsPreview.querySelectorAll('.lyricLine');
             lines.forEach((el, i) => {
@@ -499,13 +493,6 @@ const pluginConfig = {
     isEnabled: true
 };
 
-function extractAudioUrl(result) {
-    const dl = result?.download;
-    if (typeof dl === 'string' && dl.length) return dl;
-    if (dl && typeof dl === 'object') return dl.url || dl.audio || dl.link || null;
-    return result?.url || result?.audio || null;
-}
-
 async function handler(m, { sock, conn, args }) {
     const client = sock || conn;
     if (!args[0]) {
@@ -516,7 +503,7 @@ async function handler(m, { sock, conn, args }) {
 
     try {
         const query = args.join(' ');
-        
+
         const search = await yts(query);
         const video = search?.videos?.[0];
         if (!video || !video.url) {
@@ -524,12 +511,16 @@ async function handler(m, { sock, conn, args }) {
             return m.reply('🥀 _Lagu tidak ditemukan di YouTube._');
         }
 
-        const apiUrl = `https://api.zellrayy.com/download/ytplaymusic?q=${encodeURIComponent(video.url)}`;
+        // Dulu pakai /search/spotify - itu endpoint buat cari metadata
+        // (artis/track info Spotify), BUKAN buat ambil link audio, makanya
+        // selalu gagal. Diganti ke /download/play yang beneran ngasih audio.
+        const apiUrl = `https://apiii-xrina.vercel.app/download/play?q=${encodeURIComponent(video.url)}`;
         const res = await axios.get(apiUrl, { timeout: 15000 });
         const data = res.data;
 
-        const rawAudioUrl = extractAudioUrl(data?.result);
-        if (!rawAudioUrl) {
+        const rawAudioUrl = data?.data?.music || data?.data?.media?.[0];
+        if (!data?.status || !rawAudioUrl) {
+            console.error('[play2s] Respons API gak sesuai ekspektasi:', JSON.stringify(data));
             if (typeof m.react === 'function') await m.react('❌');
             return m.reply('🥀 _Gagal mendapatkan link audio dari server._');
         }
